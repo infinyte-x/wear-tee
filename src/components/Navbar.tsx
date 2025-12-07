@@ -1,7 +1,9 @@
-import { ShoppingBag, Menu, X, Search, User } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { ShoppingBag, Menu, X, Search, User, Shield, LogOut } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
 interface NavbarProps {
   cartCount?: number;
@@ -11,6 +13,8 @@ const Navbar = ({ cartCount = 0 }: NavbarProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, isAdmin, signOut } = useAuth();
   const isHome = location.pathname === "/";
 
   useEffect(() => {
@@ -29,6 +33,11 @@ const Navbar = ({ cartCount = 0 }: NavbarProps) => {
   const textClasses = isHome && !scrolled
     ? "text-cream"
     : "text-foreground";
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
 
   return (
     <header className={navClasses}>
@@ -75,9 +84,41 @@ const Navbar = ({ cartCount = 0 }: NavbarProps) => {
             <Button variant="ghost" size="icon" className={`hover:bg-transparent ${textClasses}`}>
               <Search className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon" className={`hover:bg-transparent ${textClasses}`}>
-              <User className="h-5 w-5" />
-            </Button>
+            
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className={`hover:bg-transparent ${textClasses}`}>
+                    <User className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <div className="px-2 py-1.5">
+                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                  </div>
+                  <DropdownMenuSeparator />
+                  {isAdmin && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin" className="flex items-center gap-2 cursor-pointer">
+                        <Shield className="h-4 w-4" />
+                        Admin Panel
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link to="/auth">
+                <Button variant="ghost" size="icon" className={`hover:bg-transparent ${textClasses}`}>
+                  <User className="h-5 w-5" />
+                </Button>
+              </Link>
+            )}
+            
             <Link to="/cart">
               <Button variant="ghost" size="icon" className={`relative hover:bg-transparent ${textClasses}`}>
                 <ShoppingBag className="h-5 w-5" />
@@ -132,6 +173,15 @@ const Navbar = ({ cartCount = 0 }: NavbarProps) => {
             >
               Tailoring
             </Link>
+            {isAdmin && (
+              <Link
+                to="/admin"
+                className={`block text-sm tracking-widest uppercase hover:opacity-70 transition-opacity ${textClasses}`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Admin Panel
+              </Link>
+            )}
           </div>
         )}
       </nav>
