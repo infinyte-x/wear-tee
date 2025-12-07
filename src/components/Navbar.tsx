@@ -1,7 +1,7 @@
-import { ShoppingBag, Menu, X } from "lucide-react";
-import { Link } from "react-router-dom";
+import { ShoppingBag, Menu, X, Search, User } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface NavbarProps {
   cartCount?: number;
@@ -9,36 +9,80 @@ interface NavbarProps {
 
 const Navbar = ({ cartCount = 0 }: NavbarProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const location = useLocation();
+  const isHome = location.pathname === "/";
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const navClasses = isHome && !scrolled
+    ? "fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+    : "sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border transition-all duration-300";
+
+  const textClasses = isHome && !scrolled
+    ? "text-cream"
+    : "text-foreground";
 
   return (
-    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
-      <nav className="container mx-auto px-6 py-4">
+    <header className={navClasses}>
+      <nav className="container mx-auto px-6 py-5">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="text-2xl font-serif tracking-tight hover:opacity-70 transition-opacity">
+          <Link
+            to="/"
+            className={`text-2xl font-serif tracking-wide hover:opacity-70 transition-opacity ${textClasses}`}
+          >
             ATELIER
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-12">
-            <Link to="/products" className="text-sm tracking-widest uppercase hover:text-accent transition-colors">
-              Collection
+          <div className="hidden md:flex items-center gap-10">
+            <Link
+              to="/products"
+              className={`text-xs tracking-[0.2em] uppercase hover:opacity-70 transition-opacity ${textClasses}`}
+            >
+              Shop
             </Link>
-            <Link to="/about" className="text-sm tracking-widest uppercase hover:text-accent transition-colors">
-              About
+            <Link
+              to="/products?category=Outerwear"
+              className={`text-xs tracking-[0.2em] uppercase hover:opacity-70 transition-opacity ${textClasses}`}
+            >
+              Outerwear
             </Link>
-            <Link to="/contact" className="text-sm tracking-widest uppercase hover:text-accent transition-colors">
-              Contact
+            <Link
+              to="/products?category=Knitwear"
+              className={`text-xs tracking-[0.2em] uppercase hover:opacity-70 transition-opacity ${textClasses}`}
+            >
+              Knitwear
+            </Link>
+            <Link
+              to="/products?category=Tailoring"
+              className={`text-xs tracking-[0.2em] uppercase hover:opacity-70 transition-opacity ${textClasses}`}
+            >
+              Tailoring
             </Link>
           </div>
 
-          {/* Cart & Mobile Menu */}
-          <div className="flex items-center gap-4">
+          {/* Icons */}
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" className={`hover:bg-transparent ${textClasses}`}>
+              <Search className="h-5 w-5" />
+            </Button>
+            <Button variant="ghost" size="icon" className={`hover:bg-transparent ${textClasses}`}>
+              <User className="h-5 w-5" />
+            </Button>
             <Link to="/cart">
-              <Button variant="ghost" size="icon" className="relative">
+              <Button variant="ghost" size="icon" className={`relative hover:bg-transparent ${textClasses}`}>
                 <ShoppingBag className="h-5 w-5" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-[10px] rounded-full h-5 w-5 flex items-center justify-center font-medium">
                     {cartCount}
                   </span>
                 )}
@@ -49,7 +93,7 @@ const Navbar = ({ cartCount = 0 }: NavbarProps) => {
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden"
+              className={`md:hidden hover:bg-transparent ${textClasses}`}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -59,27 +103,34 @@ const Navbar = ({ cartCount = 0 }: NavbarProps) => {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden mt-6 pb-4 space-y-4 border-t border-border pt-4">
+          <div className="md:hidden mt-6 pb-4 space-y-4 border-t border-border/30 pt-6">
             <Link
               to="/products"
-              className="block text-sm tracking-widest uppercase hover:text-accent transition-colors"
+              className={`block text-sm tracking-widest uppercase hover:opacity-70 transition-opacity ${textClasses}`}
               onClick={() => setMobileMenuOpen(false)}
             >
-              Collection
+              Shop All
             </Link>
             <Link
-              to="/about"
-              className="block text-sm tracking-widest uppercase hover:text-accent transition-colors"
+              to="/products?category=Outerwear"
+              className={`block text-sm tracking-widest uppercase hover:opacity-70 transition-opacity ${textClasses}`}
               onClick={() => setMobileMenuOpen(false)}
             >
-              About
+              Outerwear
             </Link>
             <Link
-              to="/contact"
-              className="block text-sm tracking-widest uppercase hover:text-accent transition-colors"
+              to="/products?category=Knitwear"
+              className={`block text-sm tracking-widest uppercase hover:opacity-70 transition-opacity ${textClasses}`}
               onClick={() => setMobileMenuOpen(false)}
             >
-              Contact
+              Knitwear
+            </Link>
+            <Link
+              to="/products?category=Tailoring"
+              className={`block text-sm tracking-widest uppercase hover:opacity-70 transition-opacity ${textClasses}`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Tailoring
             </Link>
           </div>
         )}

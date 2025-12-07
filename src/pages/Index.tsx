@@ -3,7 +3,10 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import ProductCard from "@/components/ProductCard";
-import { Button } from "@/components/ui/button";
+import HeroSection from "@/components/HeroSection";
+import CategoryGrid from "@/components/CategoryGrid";
+import Newsletter from "@/components/Newsletter";
+import Footer from "@/components/Footer";
 import { getCart, getCartCount } from "@/lib/cart";
 
 interface Product {
@@ -43,31 +46,12 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Navbar cartCount={cartCount} />
 
-      {/* Hero Section */}
-      <section className="relative h-[90vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-stone/50 to-background" />
-        <div className="relative z-10 text-center space-y-8 px-6 fade-in">
-          <h1 className="text-6xl md:text-8xl font-serif tracking-tight">
-            Timeless Elegance
-          </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Discover a curated collection of luxury pieces crafted with uncompromising attention
-            to detail and enduring style.
-          </p>
-          <Link to="/products">
-            <Button
-              size="lg"
-              className="mt-8 px-12 py-6 text-sm tracking-widest uppercase bg-foreground hover:bg-foreground/90"
-            >
-              Explore Collection
-            </Button>
-          </Link>
-        </div>
-      </section>
+      <HeroSection />
 
       {/* Featured Products */}
       <section className="container mx-auto px-6 py-24">
         <div className="mb-16 text-center fade-in">
+          <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-4">Curated Selection</p>
           <h2 className="text-4xl md:text-5xl font-serif mb-4">Featured Pieces</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             Handpicked essentials that embody quiet luxury and sophisticated craftsmanship.
@@ -86,38 +70,59 @@ const Index = () => {
             />
           ))}
         </div>
+
+        <div className="text-center mt-12 fade-in">
+          <Link
+            to="/products"
+            className="inline-block text-sm tracking-widest uppercase border-b border-foreground pb-1 hover:opacity-70 transition-opacity"
+          >
+            View All Products
+          </Link>
+        </div>
       </section>
+
+      <CategoryGrid />
 
       {/* Philosophy Section */}
-      <section className="bg-stone py-24">
+      <section className="py-24 border-y border-border">
         <div className="container mx-auto px-6">
-          <div className="max-w-3xl mx-auto text-center space-y-6 fade-in">
-            <h2 className="text-4xl font-serif">Our Philosophy</h2>
-            <p className="text-lg leading-relaxed text-muted-foreground">
-              We believe in the power of understated elegance. Each piece in our collection is
-              thoughtfully designed and meticulously crafted to transcend fleeting trends,
-              offering enduring style that speaks softly yet confidently.
-            </p>
-            <p className="leading-relaxed text-muted-foreground">
-              From the finest materials sourced globally to the skilled artisans who bring our
-              vision to life, every detail reflects our commitment to exceptional quality and
-              timeless design.
-            </p>
+          <div className="grid md:grid-cols-2 gap-16 items-center">
+            <div className="fade-in">
+              <img
+                src="https://images.unsplash.com/photo-1558171813-4c088753af8f?w=800&auto=format&fit=crop&q=80"
+                alt="Craftsmanship"
+                className="w-full aspect-[4/5] object-cover"
+              />
+            </div>
+            <div className="space-y-8 fade-in">
+              <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground">Our Philosophy</p>
+              <h2 className="text-4xl md:text-5xl font-serif leading-tight">
+                Crafted with Purpose, <br />
+                <span className="italic">Designed to Last</span>
+              </h2>
+              <p className="text-lg leading-relaxed text-muted-foreground">
+                We believe in the power of understated elegance. Each piece in our collection is
+                thoughtfully designed and meticulously crafted to transcend fleeting trends.
+              </p>
+              <p className="leading-relaxed text-muted-foreground">
+                From the finest materials sourced globally to the skilled artisans who bring our
+                vision to life, every detail reflects our commitment to exceptional quality and
+                timeless design.
+              </p>
+              <Link
+                to="/products"
+                className="inline-block text-sm tracking-widest uppercase border-b border-foreground pb-1 hover:opacity-70 transition-opacity"
+              >
+                Discover More
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border py-12">
-        <div className="container mx-auto px-6">
-          <div className="text-center space-y-4">
-            <p className="text-2xl font-serif">ATELIER</p>
-            <p className="text-sm text-muted-foreground">
-              © 2024 Atelier. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
+      <Newsletter />
+
+      <Footer />
     </div>
   );
 };

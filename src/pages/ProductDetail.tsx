@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { addToCart, getCart, getCartCount } from "@/lib/cart";
 import { toast } from "sonner";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Product {
   id: string;
@@ -25,6 +27,7 @@ const ProductDetail = () => {
   const [loading, setLoading] = useState(true);
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [selectedColor, setSelectedColor] = useState<string>("");
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
@@ -38,12 +41,16 @@ const ProductDetail = () => {
         .from("products")
         .select("*")
         .eq("id", id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      if (!data) {
+        navigate("/products");
+        return;
+      }
       setProduct(data);
-      if (data.sizes.length > 0) setSelectedSize(data.sizes[0]);
-      if (data.colors.length > 0) setSelectedColor(data.colors[0]);
+      if (data.sizes && data.sizes.length > 0) setSelectedSize(data.sizes[0]);
+      if (data.colors && data.colors.length > 0) setSelectedColor(data.colors[0]);
     } catch (error) {
       console.error("Error fetching product:", error);
       navigate("/products");
@@ -93,47 +100,78 @@ const ProductDetail = () => {
   if (!product) return null;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Navbar cartCount={cartCount} />
 
-      <main className="container mx-auto px-6 py-16">
+      <main className="flex-1 container mx-auto px-6 py-16">
         <div className="grid md:grid-cols-2 gap-12 lg:gap-20">
-          {/* Product Image */}
-          <div className="fade-in">
+          {/* Product Images */}
+          <div className="fade-in space-y-4">
             <div className="relative overflow-hidden bg-stone aspect-[3/4]">
               <img
-                src={product.images[0]}
+                src={product.images[selectedImageIndex]}
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
+              {product.images.length > 1 && (
+                <>
+                  <button
+                    onClick={() => setSelectedImageIndex((prev) => (prev === 0 ? product.images.length - 1 : prev - 1))}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-background/80 hover:bg-background transition-colors"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <button
+                    onClick={() => setSelectedImageIndex((prev) => (prev === product.images.length - 1 ? 0 : prev + 1))}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-background/80 hover:bg-background transition-colors"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </>
+              )}
             </div>
+            {product.images.length > 1 && (
+              <div className="flex gap-2">
+                {product.images.map((img, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedImageIndex(index)}
+                    className={`w-20 h-24 bg-stone overflow-hidden transition-opacity ${
+                      selectedImageIndex === index ? 'ring-1 ring-foreground' : 'opacity-60 hover:opacity-100'
+                    }`}
+                  >
+                    <img src={img} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Product Info */}
           <div className="space-y-8 fade-in">
             <div>
-              <p className="text-xs tracking-widest uppercase text-muted-foreground mb-4">
+              <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-4">
                 {product.category}
               </p>
               <h1 className="text-4xl md:text-5xl font-serif mb-4">{product.name}</h1>
-              <p className="text-2xl text-muted-foreground">${product.price.toFixed(2)}</p>
+              <p className="text-2xl">${product.price.toFixed(2)}</p>
             </div>
 
             <p className="leading-relaxed text-muted-foreground">{product.description}</p>
 
             {/* Size Selection */}
-            {product.sizes.length > 0 && (
+            {product.sizes && product.sizes.length > 0 && (
               <div>
-                <label className="block text-sm tracking-widest uppercase mb-4">Size</label>
+                <label className="block text-xs tracking-[0.2em] uppercase mb-4">Size</label>
                 <div className="flex gap-3">
                   {product.sizes.map((size) => (
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}
-                      className={`px-6 py-3 border transition-colors ${
+                      className={`px-6 py-3 text-sm transition-all ${
                         selectedSize === size
-                          ? "border-foreground bg-foreground text-background"
-                          : "border-border hover:border-foreground"
+                          ? "bg-foreground text-background"
+                          : "border border-border hover:border-foreground"
                       }`}
                     >
                       {size}
@@ -144,18 +182,18 @@ const ProductDetail = () => {
             )}
 
             {/* Color Selection */}
-            {product.colors.length > 0 && (
+            {product.colors && product.colors.length > 0 && (
               <div>
-                <label className="block text-sm tracking-widest uppercase mb-4">Color</label>
+                <label className="block text-xs tracking-[0.2em] uppercase mb-4">Color</label>
                 <div className="flex gap-3">
                   {product.colors.map((color) => (
                     <button
                       key={color}
                       onClick={() => setSelectedColor(color)}
-                      className={`px-6 py-3 border transition-colors ${
+                      className={`px-6 py-3 text-sm transition-all ${
                         selectedColor === color
-                          ? "border-foreground bg-foreground text-background"
-                          : "border-border hover:border-foreground"
+                          ? "bg-foreground text-background"
+                          : "border border-border hover:border-foreground"
                       }`}
                     >
                       {color}
@@ -168,7 +206,7 @@ const ProductDetail = () => {
             {/* Add to Cart */}
             <Button
               onClick={handleAddToCart}
-              className="w-full py-6 text-sm tracking-widest uppercase bg-foreground hover:bg-foreground/90"
+              className="w-full py-6 text-xs tracking-widest uppercase bg-foreground hover:bg-foreground/90"
               disabled={product.stock === 0}
             >
               {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
@@ -176,13 +214,15 @@ const ProductDetail = () => {
 
             {/* Product Details */}
             <div className="pt-8 border-t border-border space-y-4 text-sm text-muted-foreground">
-              <p>Free shipping on orders over $200</p>
+              <p>Complimentary shipping on orders over $200</p>
               <p>Free returns within 30 days</p>
               <p>Handcrafted with premium materials</p>
             </div>
           </div>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 };
