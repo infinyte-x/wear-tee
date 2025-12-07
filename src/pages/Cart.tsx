@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus, X } from "lucide-react";
 import {
@@ -42,28 +43,34 @@ const Cart = () => {
   const total = getCartTotal(cart);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Navbar cartCount={cartCount} />
 
-      <main className="container mx-auto px-6 py-16">
+      <main className="flex-1 container mx-auto px-6 py-16">
         <div className="mb-16 fade-in">
-          <h1 className="text-5xl md:text-6xl font-serif mb-4">Shopping Cart</h1>
+          <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-4">Your Selection</p>
+          <h1 className="text-5xl md:text-6xl font-serif">Shopping Cart</h1>
         </div>
 
         {cart.length === 0 ? (
           <div className="text-center py-20 fade-in">
             <p className="text-muted-foreground mb-8">Your cart is empty</p>
             <Link to="/products">
-              <Button className="bg-foreground hover:bg-foreground/90">Continue Shopping</Button>
+              <Button className="bg-foreground hover:bg-foreground/90 px-8 py-6 text-xs tracking-widest uppercase">
+                Continue Shopping
+              </Button>
             </Link>
           </div>
         ) : (
           <div className="grid lg:grid-cols-3 gap-12">
             {/* Cart Items */}
-            <div className="lg:col-span-2 space-y-8">
-              {cart.map((item) => (
-                <div key={item.id} className="flex gap-6 pb-8 border-b border-border fade-in">
-                  <div className="w-32 h-40 bg-stone flex-shrink-0">
+            <div className="lg:col-span-2 space-y-0">
+              {cart.map((item, index) => (
+                <div
+                  key={item.id}
+                  className={`flex gap-6 py-8 fade-in ${index !== cart.length - 1 ? 'border-b border-border' : ''}`}
+                >
+                  <div className="w-28 h-36 bg-stone flex-shrink-0">
                     <img
                       src={item.image}
                       alt={item.name}
@@ -75,39 +82,37 @@ const Cart = () => {
                     <div className="flex justify-between">
                       <div>
                         <h3 className="font-serif text-xl mb-2">{item.name}</h3>
-                        {item.size && (
-                          <p className="text-sm text-muted-foreground">Size: {item.size}</p>
-                        )}
-                        {item.color && (
-                          <p className="text-sm text-muted-foreground">Color: {item.color}</p>
-                        )}
+                        <div className="flex gap-4 text-sm text-muted-foreground">
+                          {item.size && <span>Size: {item.size}</span>}
+                          {item.color && <span>Color: {item.color}</span>}
+                        </div>
                       </div>
                       <button
                         onClick={() => handleRemove(item.id)}
-                        className="text-muted-foreground hover:text-foreground transition-colors"
+                        className="text-muted-foreground hover:text-foreground transition-colors h-fit"
                       >
                         <X className="h-5 w-5" />
                       </button>
                     </div>
 
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-4 border border-border">
+                    <div className="flex justify-between items-center pt-2">
+                      <div className="flex items-center border border-border">
                         <button
                           onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
-                          className="p-2 hover:bg-stone transition-colors"
+                          className="p-3 hover:bg-stone transition-colors"
                         >
-                          <Minus className="h-4 w-4" />
+                          <Minus className="h-3 w-3" />
                         </button>
-                        <span className="w-8 text-center">{item.quantity}</span>
+                        <span className="w-12 text-center text-sm">{item.quantity}</span>
                         <button
                           onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                          className="p-2 hover:bg-stone transition-colors"
+                          className="p-3 hover:bg-stone transition-colors"
                         >
-                          <Plus className="h-4 w-4" />
+                          <Plus className="h-3 w-3" />
                         </button>
                       </div>
 
-                      <p className="text-lg">${(item.price * item.quantity).toFixed(2)}</p>
+                      <p className="text-lg font-serif">${(item.price * item.quantity).toFixed(2)}</p>
                     </div>
                   </div>
                 </div>
@@ -116,17 +121,17 @@ const Cart = () => {
 
             {/* Order Summary */}
             <div className="lg:col-span-1">
-              <div className="bg-card border border-border p-8 space-y-6 sticky top-24 fade-in">
-                <h2 className="text-2xl font-serif">Order Summary</h2>
+              <div className="bg-stone p-8 space-y-6 sticky top-24 fade-in">
+                <h2 className="text-xl font-serif">Order Summary</h2>
 
-                <div className="space-y-3 py-6 border-y border-border">
+                <div className="space-y-4 py-6 border-y border-border">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Subtotal</span>
                     <span>${total.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Shipping</span>
-                    <span>{total > 200 ? "Free" : "$15.00"}</span>
+                    <span>{total > 200 ? "Complimentary" : "$15.00"}</span>
                   </div>
                 </div>
 
@@ -135,18 +140,20 @@ const Cart = () => {
                   <span>${(total + (total > 200 ? 0 : 15)).toFixed(2)}</span>
                 </div>
 
-                <Button className="w-full py-6 text-sm tracking-widest uppercase bg-foreground hover:bg-foreground/90">
+                <Button className="w-full py-6 text-xs tracking-widest uppercase bg-foreground hover:bg-foreground/90">
                   Proceed to Checkout
                 </Button>
 
                 <p className="text-xs text-muted-foreground text-center">
-                  Free shipping on orders over $200
+                  Complimentary shipping on orders over $200
                 </p>
               </div>
             </div>
           </div>
         )}
       </main>
+
+      <Footer />
     </div>
   );
 };
