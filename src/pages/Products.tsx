@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import ProductCard from "@/components/ProductCard";
 import Footer from "@/components/Footer";
+import ProductFilters, { FilterState } from "@/components/ProductFilters";
 import { getCart, getCartCount } from "@/lib/cart";
 
 interface Product {
@@ -12,6 +13,8 @@ interface Product {
   price: number;
   images: string[];
   category: string;
+  sizes: string[] | null;
+  colors: string[] | null;
 }
 
 const Products = () => {
@@ -22,6 +25,27 @@ const Products = () => {
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>(categoryFromUrl || "All");
   const [cartCount, setCartCount] = useState(0);
+
+  // Calculate max price for filter
+  const maxPrice = useMemo(() => {
+    if (products.length === 0) return 1000;
+    return Math.ceil(Math.max(...products.map(p => p.price)) / 100) * 100;
+  }, [products]);
+
+  const [filters, setFilters] = useState<FilterState>({
+    search: '',
+    priceRange: [0, 1000],
+    sizes: [],
+    colors: [],
+    sortBy: 'newest',
+  });
+
+  // Update price range when maxPrice changes
+  useEffect(() => {
+    if (maxPrice > 0 && filters.priceRange[1] === 1000) {
+      setFilters(prev => ({ ...prev, priceRange: [0, maxPrice] }));
+    }
+  }, [maxPrice]);
 
   useEffect(() => {
     fetchProducts();
@@ -52,10 +76,72 @@ const Products = () => {
 
   const categories = ["All", ...Array.from(new Set(products.map((p) => p.category)))];
 
-  const filteredProducts =
-    selectedCategory === "All"
+  // Get available sizes and colors from products
+  const availableSizes = useMemo(() => {
+    const sizes = new Set<string>();
+    products.forEach(p => p.sizes?.forEach(s => sizes.add(s)));
+    return Array.from(sizes).sort();
+  }, [products]);
+
+  const availableColors = useMemo(() => {
+    const colors = new Set<string>();
+    products.forEach(p => p.colors?.forEach(c => colors.add(c)));
+    return Array.from(colors).sort();
+  }, [products]);
+
+  // Filter and sort products
+  const filteredProducts = useMemo(() => {
+    let result = selectedCategory === "All"
       ? products
       : products.filter((p) => p.category === selectedCategory);
+
+    // Search filter
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase();
+      result = result.filter(p => 
+        p.name.toLowerCase().includes(searchLower) ||
+        p.category.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // Price filter
+    result = result.filter(p => 
+      p.price >= filters.priceRange[0] && p.price <= filters.priceRange[1]
+    );
+
+    // Size filter
+    if (filters.sizes.length > 0) {
+      result = result.filter(p => 
+        p.sizes?.some(s => filters.sizes.includes(s))
+      );
+    }
+
+    // Color filter
+    if (filters.colors.length > 0) {
+      result = result.filter(p => 
+        p.colors?.some(c => filters.colors.includes(c))
+      );
+    }
+
+    // Sorting
+    switch (filters.sortBy) {
+      case 'price-low':
+        result = [...result].sort((a, b) => a.price - b.price);
+        break;
+      case 'price-high':
+        result = [...result].sort((a, b) => b.price - a.price);
+        break;
+      case 'name':
+        result = [...result].sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case 'newest':
+      default:
+        // Already sorted by created_at desc from query
+        break;
+    }
+
+    return result;
+  }, [products, selectedCategory, filters]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -75,7 +161,7 @@ const Products = () => {
         </div>
 
         {/* Category Filter */}
-        <div className="flex gap-8 mb-12 overflow-x-auto pb-4 fade-in border-b border-border">
+        <div className="flex gap-8 mb-8 overflow-x-auto pb-4 fade-in border-b border-border">
           {categories.map((category) => (
             <button
               key={category}
@@ -91,6 +177,15 @@ const Products = () => {
           ))}
         </div>
 
+        {/* Filters */}
+        <ProductFilters
+          filters={filters}
+          onFiltersChange={setFilters}
+          availableSizes={availableSizes}
+          availableColors={availableColors}
+          maxPrice={maxPrice}
+        />
+
         {/* Products Grid */}
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8">
@@ -105,21 +200,26 @@ const Products = () => {
           </div>
         ) : filteredProducts.length === 0 ? (
           <div className="text-center py-20 fade-in">
-            <p className="text-muted-foreground">No products found in this category.</p>
+            <p className="text-muted-foreground">No products found matching your criteria.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8 stagger-children">
-            {filteredProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                id={product.id}
-                name={product.name}
-                price={product.price}
-                image={product.images[0]}
-                category={product.category}
-              />
-            ))}
-          </div>
+          <>
+            <p className="text-sm text-muted-foreground mb-6">
+              {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''} found
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8 stagger-children">
+              {filteredProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  id={product.id}
+                  name={product.name}
+                  price={product.price}
+                  image={product.images[0]}
+                  category={product.category}
+                />
+              ))}
+            </div>
+          </>
         )}
       </main>
 
