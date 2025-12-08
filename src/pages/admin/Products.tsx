@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import ImageUpload from '@/components/admin/ImageUpload';
+import ProductCsvTools from '@/components/admin/ProductCsvTools';
 
 interface Product {
   id: string;
@@ -132,18 +133,23 @@ const AdminProducts = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-serif text-foreground">Products</h1>
             <p className="text-muted-foreground mt-1">Manage your product catalog</p>
           </div>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={openCreateDialog} className="bg-charcoal text-cream hover:bg-charcoal/90">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Product
-              </Button>
-            </DialogTrigger>
+          <div className="flex flex-wrap items-center gap-3">
+            <ProductCsvTools 
+              products={products || []} 
+              onImportComplete={() => queryClient.invalidateQueries({ queryKey: ['admin-products'] })}
+            />
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <DialogTrigger asChild>
+                <Button onClick={openCreateDialog} className="bg-charcoal text-cream hover:bg-charcoal/90">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Product
+                </Button>
+              </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle className="font-serif">
@@ -241,6 +247,7 @@ const AdminProducts = () => {
               </form>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
 
         {/* Products Table */}
