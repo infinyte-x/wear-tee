@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import ImageUpload from '@/components/admin/ImageUpload';
 
 interface Product {
   id: string;
@@ -32,7 +33,7 @@ const emptyProduct = {
   category: '',
   sizes: '',
   colors: '',
-  images: '',
+  images: [] as string[],
   featured: false,
 };
 
@@ -63,7 +64,7 @@ const AdminProducts = () => {
         category: data.category,
         sizes: data.sizes.split(',').map(s => s.trim()).filter(Boolean),
         colors: data.colors.split(',').map(c => c.trim()).filter(Boolean),
-        images: data.images.split(',').map(i => i.trim()).filter(Boolean),
+        images: data.images,
         featured: data.featured,
       };
 
@@ -111,7 +112,7 @@ const AdminProducts = () => {
       category: product.category,
       sizes: product.sizes?.join(', ') || '',
       colors: product.colors?.join(', ') || '',
-      images: product.images?.join(', ') || '',
+      images: product.images || [],
       featured: product.featured || false,
     });
     setDialogOpen(true);
@@ -214,12 +215,10 @@ const AdminProducts = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Image URLs (comma-separated)</Label>
-                  <Textarea
-                    value={form.images}
-                    onChange={(e) => setForm({ ...form, images: e.target.value })}
-                    rows={2}
-                    placeholder="https://example.com/image1.jpg, https://example.com/image2.jpg"
+                  <Label>Product Images</Label>
+                  <ImageUpload
+                    images={form.images}
+                    onChange={(images) => setForm({ ...form, images })}
                   />
                 </div>
                 <div className="flex items-center gap-2">
