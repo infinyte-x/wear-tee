@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const Newsletter = () => {
@@ -12,13 +13,32 @@ const Newsletter = () => {
     if (!email) return;
 
     setLoading(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    toast.success("Thank you for subscribing", {
-      description: "You'll be the first to know about new collections.",
-    });
-    setEmail("");
-    setLoading(false);
+    try {
+      const { error } = await supabase
+        .from('newsletter_subscribers')
+        .insert({ email });
+
+      if (error) {
+        if (error.code === '23505') {
+          toast.info("You're already subscribed!", {
+            description: "Check your inbox for our latest updates.",
+          });
+        } else {
+          throw error;
+        }
+      } else {
+        toast.success("Thank you for subscribing", {
+          description: "You'll be the first to know about new collections.",
+        });
+      }
+      setEmail("");
+    } catch (error) {
+      toast.error("Something went wrong", {
+        description: "Please try again later.",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

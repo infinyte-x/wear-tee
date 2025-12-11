@@ -6,7 +6,10 @@ import {
   Users, 
   UserPlus,
   LogOut,
-  Store
+  Store,
+  FolderTree,
+  FileText,
+  Megaphone
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -14,8 +17,11 @@ import { Button } from '@/components/ui/button';
 const navItems = [
   { title: 'Dashboard', url: '/admin', icon: LayoutDashboard },
   { title: 'Products', url: '/admin/products', icon: Package },
+  { title: 'Categories', url: '/admin/categories', icon: FolderTree },
   { title: 'Orders', url: '/admin/orders', icon: ShoppingCart },
   { title: 'Customers', url: '/admin/customers', icon: Users },
+  { title: 'Site Content', url: '/admin/content', icon: FileText },
+  { title: 'Marketing', url: '/admin/marketing', icon: Megaphone },
   { title: 'Admin Invites', url: '/admin/invites', icon: UserPlus },
 ];
 
