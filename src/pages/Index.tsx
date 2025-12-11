@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import ProductCard from "@/components/ProductCard";
-import HeroSection from "@/components/HeroSection";
-import CategoryGrid from "@/components/CategoryGrid";
+import DynamicHeroSection from "@/components/DynamicHeroSection";
+import DynamicCategoryGrid from "@/components/DynamicCategoryGrid";
 import Newsletter from "@/components/Newsletter";
 import Footer from "@/components/Footer";
 import { getCart, getCartCount } from "@/lib/cart";
@@ -18,9 +19,28 @@ interface Product {
   featured: boolean;
 }
 
+interface PhilosophyContent {
+  title: string;
+  description: string;
+  image: string;
+}
+
 const Index = () => {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [cartCount, setCartCount] = useState(0);
+
+  const { data: philosophyContent } = useQuery({
+    queryKey: ['philosophy-content'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('site_content')
+        .select('content')
+        .eq('key', 'philosophy')
+        .maybeSingle();
+      if (error) throw error;
+      return data?.content as unknown as PhilosophyContent;
+    },
+  });
 
   useEffect(() => {
     fetchFeaturedProducts();
@@ -42,11 +62,17 @@ const Index = () => {
     }
   };
 
+  const philosophy = philosophyContent || {
+    title: "Our Philosophy",
+    description: "We believe in the power of understated elegance. Each piece in our collection is thoughtfully designed and meticulously crafted to transcend fleeting trends. From the finest materials sourced globally to the skilled artisans who bring our vision to life, every detail reflects our commitment to exceptional quality and timeless design.",
+    image: "https://images.unsplash.com/photo-1558171813-4c088753af8f?w=800&auto=format&fit=crop&q=80",
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar cartCount={cartCount} />
 
-      <HeroSection />
+      <DynamicHeroSection />
 
       {/* Featured Products */}
       <section className="container mx-auto px-6 py-24">
@@ -81,7 +107,7 @@ const Index = () => {
         </div>
       </section>
 
-      <CategoryGrid />
+      <DynamicCategoryGrid />
 
       {/* Philosophy Section */}
       <section className="py-24 border-y border-border">
@@ -89,7 +115,7 @@ const Index = () => {
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <div className="fade-in">
               <img
-                src="https://images.unsplash.com/photo-1558171813-4c088753af8f?w=800&auto=format&fit=crop&q=80"
+                src={philosophy.image}
                 alt="Craftsmanship"
                 className="w-full aspect-[4/5] object-cover"
               />
@@ -101,13 +127,7 @@ const Index = () => {
                 <span className="italic">Designed to Last</span>
               </h2>
               <p className="text-lg leading-relaxed text-muted-foreground">
-                We believe in the power of understated elegance. Each piece in our collection is
-                thoughtfully designed and meticulously crafted to transcend fleeting trends.
-              </p>
-              <p className="leading-relaxed text-muted-foreground">
-                From the finest materials sourced globally to the skilled artisans who bring our
-                vision to life, every detail reflects our commitment to exceptional quality and
-                timeless design.
+                {philosophy.description}
               </p>
               <Link
                 to="/products"
