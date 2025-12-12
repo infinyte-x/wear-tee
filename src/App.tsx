@@ -17,7 +17,11 @@ import AdminInvites from "./pages/admin/Invites";
 import AdminCategories from "./pages/admin/Categories";
 import AdminSiteContent from "./pages/admin/SiteContent";
 import AdminMarketing from "./pages/admin/Marketing";
+import AdminSettings from "./pages/admin/Settings";
+import AdminShipping from "./pages/admin/Shipping";
+import AdminPayments from "./pages/admin/Payments";
 import NotFound from "./pages/NotFound";
+import WhatsAppButton from "./components/WhatsAppButton";
 
 const queryClient = new QueryClient();
 
@@ -41,10 +45,14 @@ const App = () => (
             <Route path="/admin/customers" element={<AdminCustomers />} />
             <Route path="/admin/content" element={<AdminSiteContent />} />
             <Route path="/admin/marketing" element={<AdminMarketing />} />
+            <Route path="/admin/settings" element={<AdminSettings />} />
+            <Route path="/admin/shipping" element={<AdminShipping />} />
+            <Route path="/admin/payments" element={<AdminPayments />} />
             <Route path="/admin/invites" element={<AdminInvites />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <WhatsAppButton />
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>

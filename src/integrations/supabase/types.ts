@@ -38,6 +38,53 @@ export type Database = {
         }
         Relationships: []
       }
+      bd_districts: {
+        Row: {
+          division_id: string | null
+          id: string
+          name: string
+          name_bn: string | null
+        }
+        Insert: {
+          division_id?: string | null
+          id?: string
+          name: string
+          name_bn?: string | null
+        }
+        Update: {
+          division_id?: string | null
+          id?: string
+          name?: string
+          name_bn?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bd_districts_division_id_fkey"
+            columns: ["division_id"]
+            isOneToOne: false
+            referencedRelation: "bd_divisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bd_divisions: {
+        Row: {
+          id: string
+          name: string
+          name_bn: string | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          name_bn?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          name_bn?: string | null
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -190,40 +237,97 @@ export type Database = {
       }
       orders: {
         Row: {
+          alt_phone: string | null
+          area: string | null
           created_at: string
+          district: string | null
+          division: string | null
           id: string
           notes: string | null
+          payment_method: string | null
+          payment_status: string | null
+          phone: string | null
           shipping_address: string | null
           shipping_city: string | null
           shipping_country: string | null
+          shipping_fee: number | null
           status: string
           total: number
           updated_at: string
           user_id: string | null
         }
         Insert: {
+          alt_phone?: string | null
+          area?: string | null
           created_at?: string
+          district?: string | null
+          division?: string | null
           id?: string
           notes?: string | null
+          payment_method?: string | null
+          payment_status?: string | null
+          phone?: string | null
           shipping_address?: string | null
           shipping_city?: string | null
           shipping_country?: string | null
+          shipping_fee?: number | null
           status?: string
           total?: number
           updated_at?: string
           user_id?: string | null
         }
         Update: {
+          alt_phone?: string | null
+          area?: string | null
           created_at?: string
+          district?: string | null
+          division?: string | null
           id?: string
           notes?: string | null
+          payment_method?: string | null
+          payment_status?: string | null
+          phone?: string | null
           shipping_address?: string | null
           shipping_city?: string | null
           shipping_country?: string | null
+          shipping_fee?: number | null
           status?: string
           total?: number
           updated_at?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      payment_methods: {
+        Row: {
+          account_number: string | null
+          created_at: string | null
+          display_order: number | null
+          id: string
+          instructions: string | null
+          is_active: boolean | null
+          name: string
+          type: string
+        }
+        Insert: {
+          account_number?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          instructions?: string | null
+          is_active?: boolean | null
+          name: string
+          type: string
+        }
+        Update: {
+          account_number?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          instructions?: string | null
+          is_active?: boolean | null
+          name?: string
+          type?: string
         }
         Relationships: []
       }
@@ -308,6 +412,42 @@ export type Database = {
           phone?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      shipping_zones: {
+        Row: {
+          base_rate: number
+          created_at: string | null
+          display_order: number | null
+          free_shipping_threshold: number | null
+          id: string
+          is_active: boolean | null
+          name: string
+          name_bn: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          base_rate?: number
+          created_at?: string | null
+          display_order?: number | null
+          free_shipping_threshold?: number | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          name_bn?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          base_rate?: number
+          created_at?: string | null
+          display_order?: number | null
+          free_shipping_threshold?: number | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          name_bn?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
