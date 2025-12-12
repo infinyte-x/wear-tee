@@ -9,7 +9,10 @@ import {
   Store,
   FolderTree,
   FileText,
-  Megaphone
+  Megaphone,
+  Settings,
+  Truck,
+  CreditCard
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -22,6 +25,9 @@ const navItems = [
   { title: 'Customers', url: '/admin/customers', icon: Users },
   { title: 'Site Content', url: '/admin/content', icon: FileText },
   { title: 'Marketing', url: '/admin/marketing', icon: Megaphone },
+  { title: 'Shipping', url: '/admin/shipping', icon: Truck },
+  { title: 'Payments', url: '/admin/payments', icon: CreditCard },
+  { title: 'Settings', url: '/admin/settings', icon: Settings },
   { title: 'Admin Invites', url: '/admin/invites', icon: UserPlus },
 ];
 
