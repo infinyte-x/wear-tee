@@ -22,6 +22,7 @@ import AdminMarketing from "./pages/admin/Marketing";
 import AdminSettings from "./pages/admin/Settings";
 import AdminShipping from "./pages/admin/Shipping";
 import AdminPayments from "./pages/admin/Payments";
+import AdminInventory from "./pages/admin/Inventory";
 import NotFound from "./pages/NotFound";
 import WhatsAppButton from "./components/WhatsAppButton";
 
@@ -45,6 +46,7 @@ const App = () => (
             <Route path="/admin" element={<Dashboard />} />
             <Route path="/admin/products" element={<AdminProducts />} />
             <Route path="/admin/categories" element={<AdminCategories />} />
+            <Route path="/admin/inventory" element={<AdminInventory />} />
             <Route path="/admin/orders" element={<AdminOrders />} />
             <Route path="/admin/customers" element={<AdminCustomers />} />
             <Route path="/admin/content" element={<AdminSiteContent />} />
