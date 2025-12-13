@@ -340,6 +340,7 @@ export type Database = {
           featured: boolean | null
           id: string
           images: string[]
+          low_stock_threshold: number | null
           name: string
           price: number
           sizes: string[] | null
@@ -354,6 +355,7 @@ export type Database = {
           featured?: boolean | null
           id?: string
           images?: string[]
+          low_stock_threshold?: number | null
           name: string
           price: number
           sizes?: string[] | null
@@ -368,6 +370,7 @@ export type Database = {
           featured?: boolean | null
           id?: string
           images?: string[]
+          low_stock_threshold?: number | null
           name?: string
           price?: number
           sizes?: string[] | null
@@ -475,6 +478,56 @@ export type Database = {
         }
         Relationships: []
       }
+      stock_movements: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          movement_type: string
+          new_stock: number
+          notes: string | null
+          previous_stock: number
+          product_id: string
+          quantity_change: number
+          reason: string | null
+          reference_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          movement_type: string
+          new_stock: number
+          notes?: string | null
+          previous_stock: number
+          product_id: string
+          quantity_change: number
+          reason?: string | null
+          reference_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          movement_type?: string
+          new_stock?: number
+          notes?: string | null
+          previous_stock?: number
+          product_id?: string
+          quantity_change?: number
+          reason?: string | null
+          reference_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
@@ -498,6 +551,35 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      adjust_stock: {
+        Args: {
+          p_movement_type: string
+          p_notes?: string
+          p_product_id: string
+          p_quantity_change: number
+          p_reason?: string
+          p_reference_id?: string
+        }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          id: string
+          movement_type: string
+          new_stock: number
+          notes: string | null
+          previous_stock: number
+          product_id: string
+          quantity_change: number
+          reason: string | null
+          reference_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "stock_movements"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
