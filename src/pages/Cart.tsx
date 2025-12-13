@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import {
 import { toast } from "sonner";
 
 const Cart = () => {
+  const navigate = useNavigate();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartCount, setCartCount] = useState(0);
 
@@ -112,7 +113,7 @@ const Cart = () => {
                         </button>
                       </div>
 
-                      <p className="text-lg font-serif">${(item.price * item.quantity).toFixed(2)}</p>
+                      <p className="text-lg font-serif">৳{(item.price * item.quantity).toFixed(0)}</p>
                     </div>
                   </div>
                 </div>
@@ -127,25 +128,28 @@ const Cart = () => {
                 <div className="space-y-4 py-6 border-y border-border">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Subtotal</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>৳{total.toFixed(0)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Shipping</span>
-                    <span>{total > 200 ? "Complimentary" : "$15.00"}</span>
+                    <span className="text-muted-foreground">Calculated at checkout</span>
                   </div>
                 </div>
 
                 <div className="flex justify-between text-lg font-serif">
-                  <span>Total</span>
-                  <span>${(total + (total > 200 ? 0 : 15)).toFixed(2)}</span>
+                  <span>Subtotal</span>
+                  <span>৳{total.toFixed(0)}</span>
                 </div>
 
-                <Button className="w-full py-6 text-xs tracking-widest uppercase bg-foreground hover:bg-foreground/90">
+                <Button 
+                  onClick={() => navigate("/checkout")}
+                  className="w-full py-6 text-xs tracking-widest uppercase bg-foreground hover:bg-foreground/90"
+                >
                   Proceed to Checkout
                 </Button>
 
                 <p className="text-xs text-muted-foreground text-center">
-                  Complimentary shipping on orders over $200
+                  Shipping calculated based on your location
                 </p>
               </div>
             </div>
