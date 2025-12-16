@@ -49,7 +49,7 @@ export default function Page() {
     return (
         <div className="min-h-screen flex flex-col">
             <Navbar />
-            <main className="flex-1">
+            <main className={`flex-1 ${page.is_home ? '' : 'pt-20'}`}>
                 {page.is_home ? null : (
                     // Optional: Hide title if it's home, or custom header
                     <div className="container py-8">
@@ -57,7 +57,7 @@ export default function Page() {
                     </div>
                 )}
 
-                <div className="container space-y-8 pb-20">
+                <div className={`${page.is_home ? '' : 'container'} space-y-8 pb-20`}>
                     {blocks.map((block) => (
                         <BlockRenderer key={block.id} block={block} />
                     ))}

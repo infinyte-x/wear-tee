@@ -77,7 +77,7 @@ const OrderConfirmation = () => {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar cartCount={0} />
-        <main className="flex-1 container mx-auto px-6 py-16 flex items-center justify-center">
+        <main className="flex-1 container mx-auto px-6 py-16 pt-24 flex items-center justify-center">
           <p className="text-muted-foreground">Loading order details...</p>
         </main>
         <Footer />
@@ -89,7 +89,7 @@ const OrderConfirmation = () => {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar cartCount={0} />
-        <main className="flex-1 container mx-auto px-6 py-16 text-center">
+        <main className="flex-1 container mx-auto px-6 py-16 pt-24 text-center">
           <h1 className="text-2xl font-serif mb-4">Order Not Found</h1>
           <Link to="/">
             <Button>Return Home</Button>
@@ -106,7 +106,7 @@ const OrderConfirmation = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar cartCount={0} />
 
-      <main className="flex-1 container mx-auto px-6 py-16 max-w-4xl">
+      <main className="flex-1 container mx-auto px-6 py-16 pt-24 max-w-4xl">
         {/* Success Header */}
         <div className="text-center mb-12 fade-in">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-6">

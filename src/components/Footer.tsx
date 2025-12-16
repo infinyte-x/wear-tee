@@ -11,23 +11,28 @@ const Footer = () => {
   const socialLinks = [
     { icon: Instagram, href: settings?.instagram_url, label: "Instagram" },
     { icon: Facebook, href: settings?.facebook_url, label: "Facebook" },
-    { icon: Twitter, href: settings?.tiktok_url, label: "TikTok" }, // Using TikTok instead of Twitter/X as per schema
+    { icon: Twitter, href: settings?.twitter_url || settings?.tiktok_url, label: "Twitter/X" },
     { icon: Mail, href: settings?.shop_email ? `mailto:${settings.shop_email}` : null, label: "Email" },
   ].filter(link => link.href); // Only show links that exist
 
-  const navLinks = [
-    { to: "/products", label: "Shop All" },
-    { to: "/products", search: { category: "Outerwear" }, label: "Outerwear" },
-    { to: "/products", search: { category: "Knitwear" }, label: "Knitwear" },
-    { to: "/products", search: { category: "Tailoring" }, label: "Tailoring" },
-  ];
+  // Dynamic navigation links from settings
+  const navLinks = (settings?.navigation_items && settings.navigation_items.length > 0)
+    ? settings.navigation_items.map(item => ({
+      to: item.href,
+      label: item.label,
+    }))
+    : [
+      { to: "/products", label: "Shop All" },
+      { to: "/collections", label: "Collections" },
+      { to: "/about", label: "About" },
+    ];
 
+  // Support links (can be made dynamic later with footer_links setting)
   const supportLinks = [
-    "Contact Us",
-    "Shipping & Returns",
-    "Size Guide",
-    "Care Instructions",
-    "FAQ",
+    { to: "/contact", label: "Contact Us" },
+    { to: "/shipping", label: "Shipping & Returns" },
+    { to: "/size-guide", label: "Size Guide" },
+    { to: "/faq", label: "FAQ" },
   ];
 
   return (
@@ -67,7 +72,6 @@ const Footer = () => {
                 <Link
                   key={link.label}
                   to={link.to}
-                  search={link.search}
                   className="text-warm-grey text-sm hover:text-cream transition-colors duration-300 hover:translate-x-1 transform inline-block"
                 >
                   {link.label}
@@ -81,12 +85,13 @@ const Footer = () => {
             <h4 className="text-xs tracking-[0.2em] uppercase font-medium">Support</h4>
             <nav className="flex flex-col gap-3">
               {supportLinks.map((item) => (
-                <span
-                  key={item}
-                  className="text-warm-grey text-sm hover:text-cream transition-colors duration-300 cursor-pointer hover:translate-x-1 transform inline-block"
+                <Link
+                  key={item.label}
+                  to={item.to}
+                  className="text-warm-grey text-sm hover:text-cream transition-colors duration-300 hover:translate-x-1 transform inline-block"
                 >
-                  {item}
-                </span>
+                  {item.label}
+                </Link>
               ))}
             </nav>
           </div>

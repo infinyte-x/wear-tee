@@ -21,7 +21,12 @@ import {
   Boxes,
   Tag,
   FolderOpen,
-  Edit3
+  Edit3,
+  Paintbrush,
+  PaintBucket,
+  LayoutTemplate,
+  FileCode,
+  Stamp
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
@@ -62,7 +67,7 @@ const AdminSidebar = ({
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     sales: false,
     catalog: false,
-    siteContents: false,
+    customizations: false,
   });
 
   const toggleSection = (section: string) => {
@@ -85,9 +90,9 @@ const AdminSidebar = ({
       newOpenState.catalog = true;
     }
 
-    // Site Contents section
-    if (pathname.includes('/admin/collections') || pathname.includes('/admin/pages')) {
-      newOpenState.siteContents = true;
+    // Customizations section
+    if (pathname.includes('/admin/customize')) {
+      newOpenState.customizations = true;
     }
 
     setOpenSections(prev => ({ ...prev, ...newOpenState }));
@@ -318,14 +323,18 @@ const AdminSidebar = ({
             <NavLink to="/admin/attributes" icon={Tag}>Attributes</NavLink>
           </NavSection>
 
-          {/* Site Contents Section */}
-          <NavSection id="siteContents" label="Site Contents" icon={FolderOpen}>
-            <NavLink to="/admin/collections" icon={Boxes}>Collections</NavLink>
-            <NavLink to="/admin/pages" icon={Edit3}>Page Customize</NavLink>
+          {/* Collections - Standalone */}
+          <NavLink to="/admin/collections" icon={Boxes}>Collections</NavLink>
+
+          {/* Customizations Section */}
+          <NavSection id="customizations" label="Customizations" icon={Paintbrush}>
+            <NavLink to="/admin/customize/theme" icon={PaintBucket}>Theme</NavLink>
+            <NavLink to="/admin/customize/layout" icon={LayoutTemplate}>Layout</NavLink>
+            <NavLink to="/admin/customize/pages" icon={FileCode}>Pages</NavLink>
+            <NavLink to="/admin/customize/brand" icon={Stamp}>Brand</NavLink>
           </NavSection>
 
           {/* Standalone Links */}
-          <NavLink to="/admin/theme" icon={Palette}>Customizations</NavLink>
           <NavLink to="/admin/customers" icon={Users}>Customers</NavLink>
           <NavLink to="/admin/manage-shop" icon={Building2}>Manage Shop</NavLink>
           <NavLink to="/admin/reports" icon={BarChart3}>Reports</NavLink>

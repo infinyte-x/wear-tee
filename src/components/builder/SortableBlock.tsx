@@ -2,6 +2,7 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { BlockData } from "./types";
+import { BlockRenderer } from "./BlockRenderer";
 import { GripVertical, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -40,14 +41,12 @@ export function SortableBlock({ block, isSelected, onSelect, onDelete }: Sortabl
         >
             {/* Block Content Wrapper */}
             <div
-                className="bg-white border rounded shadow-sm p-4 min-h-[50px] cursor-pointer hover:border-primary/50"
+                className="bg-white border rounded shadow-sm overflow-hidden cursor-pointer hover:border-primary/50"
                 onClick={() => onSelect(block.id)}
             >
                 <div className="pointer-events-none">
-                    {/* Placeholder for actual block renderer */}
-                    <div className="text-center p-4 border border-dashed rounded bg-muted/20">
-                        <span className="font-semibold capitalize">{block.type} Block</span>
-                    </div>
+                    {/* Render the actual block content with live state */}
+                    <BlockRenderer block={block} />
                 </div>
             </div>
 
@@ -74,3 +73,4 @@ export function SortableBlock({ block, isSelected, onSelect, onDelete }: Sortabl
         </div>
     );
 }
+

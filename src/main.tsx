@@ -6,7 +6,6 @@ import { Toaster } from "@/components/ui/toaster"
 import { Toaster as Sonner } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { DocumentHead } from "@/components/DocumentHead"
-import { AnnouncementBar } from "@/components/AnnouncementBar"
 import { CustomStylesInjector } from "@/components/CustomStylesInjector"
 
 // Import the generated route tree
@@ -36,7 +35,6 @@ if (!rootElement.innerHTML) {
                 <TooltipProvider>
                     <DocumentHead />
                     <CustomStylesInjector />
-                    <AnnouncementBar />
                     <Toaster />
                     <Sonner />
                     <RouterProvider router={router} />

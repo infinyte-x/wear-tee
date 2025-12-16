@@ -1,15 +1,34 @@
 
 import { DraggableBlockItem } from "./DraggableBlockItem";
-import { Type, Image, LayoutGrid, Layers, ShoppingBag } from "lucide-react";
+import {
+    Type,
+    Image,
+    LayoutGrid,
+    Layers,
+    ShoppingBag,
+    HelpCircle,
+    MessageSquareQuote,
+    PlayCircle,
+    MousePointerClick,
+    Columns,
+    Images,
+    Mail
+} from "lucide-react";
 import { BlockDefinition } from "./types";
 
 const AVAILABLE_BLOCKS: BlockDefinition[] = [
     { type: 'hero', label: 'Hero Section', icon: Layers, defaultContent: {} },
     { type: 'text', label: 'Rich Text', icon: Type, defaultContent: {} },
-    { type: 'image', label: 'Image / Gallery', icon: Image, defaultContent: {} },
+    { type: 'image', label: 'Image', icon: Image, defaultContent: {} },
+    { type: 'gallery', label: 'Image Gallery', icon: Images, defaultContent: {} },
+    { type: 'video', label: 'Video Embed', icon: PlayCircle, defaultContent: {} },
+    { type: 'columns', label: 'Columns', icon: Columns, defaultContent: { columns: 2 } },
     { type: 'product-grid', label: 'Product Grid', icon: ShoppingBag, defaultContent: {} },
     { type: 'features', label: 'Features List', icon: LayoutGrid, defaultContent: {} },
-    { type: 'newsletter', label: 'Newsletter', icon: Type, defaultContent: {} },
+    { type: 'testimonials', label: 'Testimonials', icon: MessageSquareQuote, defaultContent: {} },
+    { type: 'faq', label: 'FAQ Accordion', icon: HelpCircle, defaultContent: {} },
+    { type: 'cta', label: 'Call to Action', icon: MousePointerClick, defaultContent: {} },
+    { type: 'newsletter', label: 'Newsletter', icon: Mail, defaultContent: {} },
 ];
 
 export function BlockSidebar() {
@@ -29,3 +48,4 @@ export function BlockSidebar() {
         </div>
     );
 }
+

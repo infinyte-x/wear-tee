@@ -49,44 +49,73 @@ const Navbar = ({ cartCount = 0 }: NavbarProps) => {
     setMobileMenuOpen(false);
   }, [location.pathname]);
 
+  // Check if announcement bar is showing (for top offset)
+  // Also check page visibility setting and dismissed state
+  const [announcementDismissed, setAnnouncementDismissed] = useState(false);
+
+  useEffect(() => {
+    const dismissed = sessionStorage.getItem('announcement_dismissed');
+    setAnnouncementDismissed(dismissed === 'true');
+  }, []);
+
+  const showOnPages = (settings as any)?.announcement_show_on || 'all';
+  const currentPath = location.pathname;
+  const isAdminRoute = currentPath.startsWith('/admin');
+
+  const shouldShowAnnouncement =
+    settings?.announcement_enabled &&
+    settings?.announcement_text &&
+    !isAdminRoute &&
+    !announcementDismissed &&
+    (showOnPages === 'all' ||
+      (showOnPages === 'home' && currentPath === '/') ||
+      (showOnPages === 'products' && (currentPath.startsWith('/products') || currentPath.startsWith('/collections'))));
+
   const navClasses = cn(
-    "fixed top-0 left-0 right-0 z-50 transition-all duration-500",
-    scrolled || !isHome
-      ? "bg-background/90 backdrop-blur-xl border-b border-border/50 shadow-sm"
-      : "bg-transparent"
+    "fixed left-0 right-0 z-50 transition-all duration-500",
+    shouldShowAnnouncement ? "top-[42px]" : "top-0",
+    "bg-background/95 backdrop-blur-xl border-b border-border/50 shadow-sm"
   );
 
-  const textClasses = "text-foreground transition-colors duration-300";
+  const textClasses = cn(
+    "transition-colors duration-300",
+    "text-foreground"
+  );
 
   const handleSignOut = async () => {
     await signOut();
     navigate({ to: '/' });
   };
-
-  const navLinks = [
-    { to: "/products", label: "Shop", search: undefined },
-    { to: "/products", label: "Outerwear", search: { category: "Outerwear" } },
-    { to: "/products", label: "Knitwear", search: { category: "Knitwear" } },
-    { to: "/products", label: "Tailoring", search: { category: "Tailoring" } },
-  ];
+  // Debug navigation items
+  const navLinks = (settings?.navigation_items && Array.isArray(settings.navigation_items) && settings.navigation_items.length > 0)
+    ? settings.navigation_items.map(item => ({
+      to: item.href,
+      label: item.label,
+      search: undefined,
+    }))
+    : [
+      { to: "/", label: "Home", search: undefined },
+      { to: "/products", label: "Products", search: undefined },
+      { to: "/about", label: "About", search: undefined },
+    ];
 
   return (
     <header className={navClasses}>
       <nav className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
-          {/* Logo */}
+          {/* Logo - Left */}
           <Link
             to="/"
             className={cn(
-              "text-2xl font-serif tracking-wide transition-all duration-300 hover:opacity-80 hover:scale-[1.02]",
+              "text-2xl font-serif tracking-wide transition-all duration-300 hover:opacity-80 hover:scale-[1.02] flex-shrink-0",
               textClasses
             )}
           >
             {settings?.store_name?.toUpperCase() || 'ATELIER'}
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8 lg:gap-12">
+          {/* Desktop Navigation - Center */}
+          <div className="hidden md:flex items-center justify-center gap-8 lg:gap-12 absolute left-1/2 -translate-x-1/2">
             {navLinks.map((link) => (
               <Link
                 key={link.label}

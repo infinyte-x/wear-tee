@@ -23,6 +23,7 @@ import { Route as OrderConfirmationOrderIdRouteImport } from './routes/order-con
 import { Route as CollectionsSlugRouteImport } from './routes/collections.$slug'
 import { Route as AdminUsersPermissionsRouteImport } from './routes/admin.users-permissions'
 import { Route as AdminTransactionsRouteImport } from './routes/admin.transactions'
+import { Route as AdminThemeRouteImport } from './routes/admin.theme'
 import { Route as AdminShippingRouteImport } from './routes/admin.shipping'
 import { Route as AdminShipmentsRouteImport } from './routes/admin.shipments'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
@@ -152,6 +153,11 @@ const AdminUsersPermissionsRoute = AdminUsersPermissionsRouteImport.update({
 const AdminTransactionsRoute = AdminTransactionsRouteImport.update({
   id: '/admin/transactions',
   path: '/admin/transactions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminThemeRoute = AdminThemeRouteImport.update({
+  id: '/admin/theme',
+  path: '/admin/theme',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminShippingRoute = AdminShippingRouteImport.update({
@@ -489,6 +495,7 @@ export interface FileRoutesByFullPath {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/shipments': typeof AdminShipmentsRoute
   '/admin/shipping': typeof AdminShippingRoute
+  '/admin/theme': typeof AdminThemeRoute
   '/admin/transactions': typeof AdminTransactionsRoute
   '/admin/users-permissions': typeof AdminUsersPermissionsRoute
   '/collections/$slug': typeof CollectionsSlugRoute
@@ -563,6 +570,7 @@ export interface FileRoutesByTo {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/shipments': typeof AdminShipmentsRoute
   '/admin/shipping': typeof AdminShippingRoute
+  '/admin/theme': typeof AdminThemeRoute
   '/admin/transactions': typeof AdminTransactionsRoute
   '/admin/users-permissions': typeof AdminUsersPermissionsRoute
   '/collections/$slug': typeof CollectionsSlugRoute
@@ -640,6 +648,7 @@ export interface FileRoutesById {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/shipments': typeof AdminShipmentsRoute
   '/admin/shipping': typeof AdminShippingRoute
+  '/admin/theme': typeof AdminThemeRoute
   '/admin/transactions': typeof AdminTransactionsRoute
   '/admin/users-permissions': typeof AdminUsersPermissionsRoute
   '/collections/$slug': typeof CollectionsSlugRoute
@@ -717,6 +726,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/shipments'
     | '/admin/shipping'
+    | '/admin/theme'
     | '/admin/transactions'
     | '/admin/users-permissions'
     | '/collections/$slug'
@@ -791,6 +801,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/shipments'
     | '/admin/shipping'
+    | '/admin/theme'
     | '/admin/transactions'
     | '/admin/users-permissions'
     | '/collections/$slug'
@@ -867,6 +878,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/shipments'
     | '/admin/shipping'
+    | '/admin/theme'
     | '/admin/transactions'
     | '/admin/users-permissions'
     | '/collections/$slug'
@@ -944,6 +956,7 @@ export interface RootRouteChildren {
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminShipmentsRoute: typeof AdminShipmentsRoute
   AdminShippingRoute: typeof AdminShippingRoute
+  AdminThemeRoute: typeof AdminThemeRoute
   AdminTransactionsRoute: typeof AdminTransactionsRoute
   AdminUsersPermissionsRoute: typeof AdminUsersPermissionsRoute
   CollectionsSlugRoute: typeof CollectionsSlugRoute
@@ -1084,6 +1097,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/transactions'
       fullPath: '/admin/transactions'
       preLoaderRoute: typeof AdminTransactionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/theme': {
+      id: '/admin/theme'
+      path: '/admin/theme'
+      fullPath: '/admin/theme'
+      preLoaderRoute: typeof AdminThemeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/shipping': {
@@ -1571,6 +1591,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminSettingsRoute: AdminSettingsRoute,
   AdminShipmentsRoute: AdminShipmentsRoute,
   AdminShippingRoute: AdminShippingRoute,
+  AdminThemeRoute: AdminThemeRoute,
   AdminTransactionsRoute: AdminTransactionsRoute,
   AdminUsersPermissionsRoute: AdminUsersPermissionsRoute,
   CollectionsSlugRoute: CollectionsSlugRoute,

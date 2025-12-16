@@ -10,9 +10,10 @@ interface BuilderCanvasProps {
     selectedBlockId: string | null;
     onSelectBlock: (id: string) => void;
     onDeleteBlock: (id: string) => void;
+    previewWidth?: string;
 }
 
-export function BuilderCanvas({ blocks, selectedBlockId, onSelectBlock, onDeleteBlock }: BuilderCanvasProps) {
+export function BuilderCanvas({ blocks, selectedBlockId, onSelectBlock, onDeleteBlock, previewWidth = '100%' }: BuilderCanvasProps) {
     const { setNodeRef, isOver } = useDroppable({
         id: "canvas-droppable",
     });
@@ -21,8 +22,9 @@ export function BuilderCanvas({ blocks, selectedBlockId, onSelectBlock, onDelete
         <div className="flex-1 overflow-y-auto bg-muted/10 p-8 flex justify-center">
             <div
                 ref={setNodeRef}
+                style={{ width: previewWidth, maxWidth: previewWidth === '100%' ? '56rem' : previewWidth }}
                 className={cn(
-                    "w-full max-w-4xl min-h-[500px] bg-white shadow-sm border rounded-lg p-8 transition-colors",
+                    "min-h-[500px] bg-white shadow-sm border rounded-lg p-8 transition-all duration-300",
                     isOver && "bg-blue-50 border-blue-200 ring-2 ring-blue-100"
                 )}
             >
@@ -47,3 +49,4 @@ export function BuilderCanvas({ blocks, selectedBlockId, onSelectBlock, onDelete
         </div>
     );
 }
+

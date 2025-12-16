@@ -47,7 +47,7 @@ const Cart = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar cartCount={cartCount} />
 
-      <main className="flex-1 container mx-auto px-6 py-16">
+      <main className="flex-1 container mx-auto px-6 py-16 pt-24">
         <div className="mb-16 fade-in">
           <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-4">Your Selection</p>
           <h1 className="text-5xl md:text-6xl font-serif">Shopping Cart</h1>

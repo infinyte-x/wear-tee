@@ -229,7 +229,7 @@ const Checkout = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar cartCount={cartCount} />
 
-      <main className="flex-1 container mx-auto px-6 py-16">
+      <main className="flex-1 container mx-auto px-6 py-16 pt-24">
         <div className="mb-12 fade-in">
           <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-4">Checkout</p>
           <h1 className="text-4xl md:text-5xl font-serif">Complete Your Order</h1>
@@ -396,8 +396,8 @@ const Checkout = () => {
                       <label
                         key={method.id}
                         className={`flex items-start gap-4 p-4 border cursor-pointer transition-colors ${paymentMethod === method.id
-                            ? "border-foreground bg-stone"
-                            : "border-border hover:border-muted-foreground"
+                          ? "border-foreground bg-stone"
+                          : "border-border hover:border-muted-foreground"
                           }`}
                       >
                         <RadioGroupItem value={method.id} className="mt-0.5" />

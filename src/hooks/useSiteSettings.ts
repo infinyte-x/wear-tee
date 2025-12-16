@@ -27,6 +27,7 @@ export interface SiteSettings {
     facebook_url: string | null;
     instagram_url: string | null;
     youtube_url: string | null;
+    twitter_url: string | null;
     tiktok_url: string | null;
     // Media
     logo_url: string | null;
@@ -59,6 +60,7 @@ export interface SiteSettings {
     navigation_items: Array<{ label: string; href: string; order: number }>;
     show_search: boolean;
     show_cart_count: boolean;
+    show_wishlist: boolean;
     // Advanced Settings
     custom_css: string | null;
     custom_js: string | null;
@@ -79,7 +81,7 @@ export function useSiteSettings() {
     const { toast } = useToast();
     const queryClient = useQueryClient();
 
-    // Fetch settings (public)
+    // Fetch settings (public) - heavily cached for fast loads
     const { data: settings, isLoading, error } = useQuery({
         queryKey: ['site-settings'],
         queryFn: async () => {
@@ -91,7 +93,10 @@ export function useSiteSettings() {
             if (error) throw error;
             return data as any as SiteSettings;
         },
-        staleTime: 1000 * 60 * 5, // 5 minutes
+        staleTime: 1000 * 60 * 10, // 10 minutes - data considered fresh
+        gcTime: 1000 * 60 * 60, // 1 hour - keep in cache
+        refetchOnWindowFocus: false, // Don't refetch when switching tabs
+        refetchOnMount: false, // Don't refetch on component mount if data exists
     });
 
     // Update settings (admin only)

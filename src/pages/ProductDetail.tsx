@@ -87,7 +87,7 @@ const ProductDetail = () => {
     return (
       <div className="min-h-screen bg-background">
         <Navbar cartCount={cartCount} />
-        <div className="container mx-auto px-6 py-16">
+        <div className="container mx-auto px-6 pt-24 pb-16">
           <div className="animate-pulse grid md:grid-cols-2 gap-12">
             <div className="bg-stone aspect-[3/4]" />
             <div className="space-y-6">
