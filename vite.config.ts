@@ -25,35 +25,34 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // React core + React-dependent libraries bundled together
+          // All React-dependent vendor libraries bundled together
           // to prevent loading order issues (forwardRef, Component, etc.)
+          // This includes: React, TanStack, Radix UI, Lucide, Motion, react-hook-form, recharts
           if (
             id.includes('node_modules/react-dom') ||
             id.includes('node_modules/react/') ||
             id.includes('@tanstack') ||
-            id.includes('@radix-ui')
+            id.includes('@radix-ui') ||
+            id.includes('lucide-react') ||
+            id.includes('motion') ||
+            id.includes('framer') ||
+            id.includes('react-hook-form') ||
+            id.includes('@hookform') ||
+            id.includes('recharts')
           ) {
-            return 'vendor-react-core';
+            return 'vendor-react-ecosystem';
           }
-          // Recharts
-          if (id.includes('recharts') || id.includes('d3-')) {
-            return 'vendor-recharts';
+          // D3 (used by recharts but doesn't depend on React)
+          if (id.includes('d3-')) {
+            return 'vendor-d3';
           }
-          // Motion/Framer
-          if (id.includes('motion') || id.includes('framer')) {
-            return 'vendor-motion';
-          }
-          // Supabase
+          // Supabase (doesn't depend on React)
           if (id.includes('@supabase')) {
             return 'vendor-supabase';
           }
-          // Form libraries
-          if (id.includes('react-hook-form') || id.includes('zod') || id.includes('@hookform')) {
-            return 'vendor-forms';
-          }
-          // lucide icons (can be large)
-          if (id.includes('lucide-react')) {
-            return 'vendor-icons';
+          // Zod (pure validation, no React dependency)
+          if (id.includes('zod')) {
+            return 'vendor-zod';
           }
           // Admin pages - split into own chunk
           if (id.includes('/pages/admin/')) {
