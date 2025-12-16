@@ -24,38 +24,54 @@ export default defineConfig(({ mode }) => ({
     chunkSizeWarningLimit: 700, // Increased from 500KB since we're splitting vendors
     rollupOptions: {
       output: {
-        manualChunks: {
+        manualChunks(id) {
           // React core
-          'vendor-react': ['react', 'react-dom'],
-          // UI libraries
-          'vendor-radix': [
-            '@radix-ui/react-accordion',
-            '@radix-ui/react-alert-dialog',
-            '@radix-ui/react-avatar',
-            '@radix-ui/react-checkbox',
-            '@radix-ui/react-dialog',
-            '@radix-ui/react-dropdown-menu',
-            '@radix-ui/react-label',
-            '@radix-ui/react-popover',
-            '@radix-ui/react-select',
-            '@radix-ui/react-separator',
-            '@radix-ui/react-slot',
-            '@radix-ui/react-switch',
-            '@radix-ui/react-tabs',
-            '@radix-ui/react-toast',
-            '@radix-ui/react-tooltip',
-          ],
-          // Data fetching & routing
-          'vendor-tanstack': [
-            '@tanstack/react-query',
-            '@tanstack/react-router',
-          ],
-          // Charts
-          'vendor-recharts': ['recharts'],
-          // Animation
-          'vendor-motion': ['motion'],
+          if (id.includes('node_modules/react-dom') || id.includes('node_modules/react/')) {
+            return 'vendor-react';
+          }
+          // Radix UI
+          if (id.includes('@radix-ui')) {
+            return 'vendor-radix';
+          }
+          // TanStack
+          if (id.includes('@tanstack')) {
+            return 'vendor-tanstack';
+          }
+          // Recharts
+          if (id.includes('recharts') || id.includes('d3-')) {
+            return 'vendor-recharts';
+          }
+          // Motion/Framer
+          if (id.includes('motion') || id.includes('framer')) {
+            return 'vendor-motion';
+          }
           // Supabase
-          'vendor-supabase': ['@supabase/supabase-js'],
+          if (id.includes('@supabase')) {
+            return 'vendor-supabase';
+          }
+          // Form libraries
+          if (id.includes('react-hook-form') || id.includes('zod') || id.includes('@hookform')) {
+            return 'vendor-forms';
+          }
+          // lucide icons (can be large)
+          if (id.includes('lucide-react')) {
+            return 'vendor-icons';
+          }
+          // Admin pages - split into own chunk
+          if (id.includes('/pages/admin/')) {
+            return 'pages-admin';
+          }
+          // Storefront pages
+          if (id.includes('/pages/') && !id.includes('/pages/admin/')) {
+            return 'pages-storefront';
+          }
+          // Components
+          if (id.includes('/components/admin/')) {
+            return 'components-admin';
+          }
+          if (id.includes('/components/') && !id.includes('/components/admin/')) {
+            return 'components-shared';
+          }
         },
       },
     },
