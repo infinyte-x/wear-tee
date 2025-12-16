@@ -21,21 +21,22 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    chunkSizeWarningLimit: 700, // Increased from 500KB since we're splitting vendors
+    chunkSizeWarningLimit: 800, // Increased to accommodate merged chunks
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // React core
-          if (id.includes('node_modules/react-dom') || id.includes('node_modules/react/')) {
-            return 'vendor-react';
+          // React core + TanStack bundled together to prevent loading order issues
+          // TanStack libraries depend on React and need it available at initialization
+          if (
+            id.includes('node_modules/react-dom') ||
+            id.includes('node_modules/react/') ||
+            id.includes('@tanstack')
+          ) {
+            return 'vendor-react-core';
           }
           // Radix UI
           if (id.includes('@radix-ui')) {
             return 'vendor-radix';
-          }
-          // TanStack
-          if (id.includes('@tanstack')) {
-            return 'vendor-tanstack';
           }
           // Recharts
           if (id.includes('recharts') || id.includes('d3-')) {
