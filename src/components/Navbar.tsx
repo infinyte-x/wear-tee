@@ -111,7 +111,7 @@ const Navbar = ({ cartCount = 0 }: NavbarProps) => {
               textClasses
             )}
           >
-            {settings?.store_name?.toUpperCase() || 'ATELIER'}
+            {settings?.store_name?.toUpperCase() || ''}
           </Link>
 
           {/* Desktop Navigation - Center */}

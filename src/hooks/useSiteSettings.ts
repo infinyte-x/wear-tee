@@ -81,6 +81,28 @@ export function useSiteSettings() {
     const { toast } = useToast();
     const queryClient = useQueryClient();
 
+    // LocalStorage key for caching
+    const CACHE_KEY = 'site-settings-cache';
+
+    // Get cached settings from localStorage
+    const getCachedSettings = (): SiteSettings | undefined => {
+        try {
+            const cached = localStorage.getItem(CACHE_KEY);
+            return cached ? JSON.parse(cached) : undefined;
+        } catch {
+            return undefined;
+        }
+    };
+
+    // Save settings to localStorage
+    const setCachedSettings = (settings: SiteSettings) => {
+        try {
+            localStorage.setItem(CACHE_KEY, JSON.stringify(settings));
+        } catch {
+            // Ignore storage errors
+        }
+    };
+
     // Fetch settings (public) - heavily cached for fast loads
     const { data: settings, isLoading, error } = useQuery({
         queryKey: ['site-settings'],
@@ -91,12 +113,17 @@ export function useSiteSettings() {
                 .single();
 
             if (error) throw error;
+
+            // Cache to localStorage for instant fallback
+            setCachedSettings(data as any as SiteSettings);
+
             return data as any as SiteSettings;
         },
         staleTime: 1000 * 60 * 10, // 10 minutes - data considered fresh
         gcTime: 1000 * 60 * 60, // 1 hour - keep in cache
         refetchOnWindowFocus: false, // Don't refetch when switching tabs
         refetchOnMount: false, // Don't refetch on component mount if data exists
+        placeholderData: getCachedSettings(), // Use localStorage as instant fallback
     });
 
     // Update settings (admin only)
