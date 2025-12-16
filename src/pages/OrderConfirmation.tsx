@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { Link, getRouteApi } from "@tanstack/react-router";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -32,8 +32,10 @@ interface OrderItem {
   color: string | null;
 }
 
+const routeApi = getRouteApi('/order-confirmation/$orderId')
+
 const OrderConfirmation = () => {
-  const { orderId } = useParams();
+  const { orderId } = routeApi.useParams();
   const [order, setOrder] = useState<Order | null>(null);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(true);

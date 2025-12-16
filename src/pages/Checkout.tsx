@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@tanstack/react-router";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -61,7 +61,7 @@ const Checkout = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartCount, setCartCount] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // Form state
   const [phone, setPhone] = useState("");
   const [altPhone, setAltPhone] = useState("");
@@ -71,7 +71,7 @@ const Checkout = () => {
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
-  
+
   // Data from DB
   const [divisions, setDivisions] = useState<Division[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
@@ -99,7 +99,7 @@ const Checkout = () => {
       const selectedDivision = divisions.find(d => d.id === division);
       if (selectedDivision) {
         const isDhaka = selectedDivision.name.toLowerCase() === "dhaka";
-        const zone = shippingZones.find(z => 
+        const zone = shippingZones.find(z =>
           isDhaka ? z.name.toLowerCase().includes("inside") : z.name.toLowerCase().includes("outside")
         );
         setSelectedZone(zone || shippingZones[0]);
@@ -111,9 +111,9 @@ const Checkout = () => {
     const cartItems = getCart();
     setCart(cartItems);
     setCartCount(getCartCount(cartItems));
-    
+
     if (cartItems.length === 0) {
-      navigate("/cart");
+      navigate({ to: "/cart" });
     }
   };
 
@@ -137,7 +137,7 @@ const Checkout = () => {
   };
 
   const subtotal = getCartTotal(cart);
-  const shippingFee = selectedZone 
+  const shippingFee = selectedZone
     ? (selectedZone.free_shipping_threshold && subtotal >= selectedZone.free_shipping_threshold ? 0 : selectedZone.base_rate)
     : 0;
   const total = subtotal + shippingFee;
@@ -149,17 +149,17 @@ const Checkout = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validatePhone(phone)) {
       toast.error("Please enter a valid Bangladesh phone number (01XXXXXXXXX)");
       return;
     }
-    
+
     if (!division || !district || !area || !address) {
       toast.error("Please fill in all address fields");
       return;
     }
-    
+
     if (!paymentMethod) {
       toast.error("Please select a payment method");
       return;
@@ -214,7 +214,7 @@ const Checkout = () => {
 
       clearCart();
       toast.success("Order placed successfully!");
-      navigate(`/order-confirmation/${order.id}`);
+      navigate({ to: "/order-confirmation/$orderId", params: { orderId: order.id } });
     } catch (error: any) {
       console.error("Order error:", error);
       toast.error("Failed to place order. Please try again.");
@@ -245,7 +245,7 @@ const Checkout = () => {
                   <Phone className="h-5 w-5 text-muted-foreground" />
                   <h2 className="text-xl font-serif">Contact Information</h2>
                 </div>
-                
+
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number *</Label>
@@ -260,7 +260,7 @@ const Checkout = () => {
                     />
                     <p className="text-xs text-muted-foreground">Required for delivery</p>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="altPhone">Alternative Phone</Label>
                     <Input
@@ -281,7 +281,7 @@ const Checkout = () => {
                   <MapPin className="h-5 w-5 text-muted-foreground" />
                   <h2 className="text-xl font-serif">Delivery Address</h2>
                 </div>
-                
+
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label>Division *</Label>
@@ -298,7 +298,7 @@ const Checkout = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label>District *</Label>
                     <Select value={district} onValueChange={setDistrict} disabled={!division}>
@@ -359,7 +359,7 @@ const Checkout = () => {
                     <Truck className="h-5 w-5 text-muted-foreground" />
                     <h2 className="text-xl font-serif">Shipping</h2>
                   </div>
-                  
+
                   <div className="bg-stone p-6 rounded-sm">
                     <div className="flex justify-between items-center">
                       <div>
@@ -389,17 +389,16 @@ const Checkout = () => {
                   <CreditCard className="h-5 w-5 text-muted-foreground" />
                   <h2 className="text-xl font-serif">Payment Method</h2>
                 </div>
-                
+
                 <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
                   <div className="space-y-3">
                     {paymentMethods.map((method) => (
                       <label
                         key={method.id}
-                        className={`flex items-start gap-4 p-4 border cursor-pointer transition-colors ${
-                          paymentMethod === method.id
+                        className={`flex items-start gap-4 p-4 border cursor-pointer transition-colors ${paymentMethod === method.id
                             ? "border-foreground bg-stone"
                             : "border-border hover:border-muted-foreground"
-                        }`}
+                          }`}
                       >
                         <RadioGroupItem value={method.id} className="mt-0.5" />
                         <div className="flex-1">
@@ -470,7 +469,7 @@ const Checkout = () => {
                   <span>৳{total.toFixed(0)}</span>
                 </div>
 
-                <Button 
+                <Button
                   type="submit"
                   className="w-full py-6 text-xs tracking-widest uppercase bg-foreground hover:bg-foreground/90"
                   disabled={isSubmitting}

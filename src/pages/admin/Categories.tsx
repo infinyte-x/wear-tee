@@ -124,10 +124,10 @@ const Categories = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-8">
+      <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-serif text-foreground">Categories</h1>
+            <h1 className="text-2xl font-semibold text-foreground">Categories</h1>
             <p className="text-muted-foreground mt-1">Manage product categories</p>
           </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -195,7 +195,7 @@ const Categories = () => {
           </Dialog>
         </div>
 
-        <div className="bg-card border border-border">
+        <div className="bg-card border border-border rounded-xl overflow-hidden">
           {isLoading ? (
             <div className="p-8 text-center text-muted-foreground">Loading...</div>
           ) : categories && categories.length > 0 ? (

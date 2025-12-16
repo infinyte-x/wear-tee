@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '@tanstack/react-router';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,21 +20,21 @@ const Auth = () => {
   const [fullName, setFullName] = useState('');
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const [submitting, setSubmitting] = useState(false);
-  
+
   const { user, signIn, signUp } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
     if (user) {
-      navigate('/');
+      navigate({ to: '/' });
     }
   }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
-    
+
     const result = authSchema.safeParse({ email, password, fullName });
     if (!result.success) {
       const fieldErrors: { email?: string; password?: string } = {};
@@ -58,7 +58,7 @@ const Auth = () => {
         });
       } else {
         toast({ title: 'Welcome back!' });
-        navigate('/');
+        navigate({ to: '/' });
       }
     } else {
       const { error } = await signUp(email, password, fullName);
@@ -70,10 +70,10 @@ const Auth = () => {
         });
       } else {
         toast({ title: 'Account created successfully!' });
-        navigate('/');
+        navigate({ to: '/' });
       }
     }
-    
+
     setSubmitting(false);
   };
 

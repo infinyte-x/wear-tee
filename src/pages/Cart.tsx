@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "@tanstack/react-router";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -141,8 +141,8 @@ const Cart = () => {
                   <span>৳{total.toFixed(0)}</span>
                 </div>
 
-                <Button 
-                  onClick={() => navigate("/checkout")}
+                <Button
+                  onClick={() => navigate({ to: "/checkout" })}
                   className="w-full py-6 text-xs tracking-widest uppercase bg-foreground hover:bg-foreground/90"
                 >
                   Proceed to Checkout

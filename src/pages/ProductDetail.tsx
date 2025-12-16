@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate, getRouteApi } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -20,8 +20,10 @@ interface Product {
   stock: number;
 }
 
+const routeApi = getRouteApi('/product/$id')
+
 const ProductDetail = () => {
-  const { id } = useParams();
+  const { id } = routeApi.useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -45,7 +47,7 @@ const ProductDetail = () => {
 
       if (error) throw error;
       if (!data) {
-        navigate("/products");
+        navigate({ to: "/products" });
         return;
       }
       setProduct(data);
@@ -53,7 +55,7 @@ const ProductDetail = () => {
       if (data.colors && data.colors.length > 0) setSelectedColor(data.colors[0]);
     } catch (error) {
       console.error("Error fetching product:", error);
-      navigate("/products");
+      navigate({ to: "/products" });
     } finally {
       setLoading(false);
     }
@@ -136,9 +138,8 @@ const ProductDetail = () => {
                   <button
                     key={index}
                     onClick={() => setSelectedImageIndex(index)}
-                    className={`w-20 h-24 bg-stone overflow-hidden transition-opacity ${
-                      selectedImageIndex === index ? 'ring-1 ring-foreground' : 'opacity-60 hover:opacity-100'
-                    }`}
+                    className={`w-20 h-24 bg-stone overflow-hidden transition-opacity ${selectedImageIndex === index ? 'ring-1 ring-foreground' : 'opacity-60 hover:opacity-100'
+                      }`}
                   >
                     <img src={img} alt="" className="w-full h-full object-cover" />
                   </button>
@@ -168,11 +169,10 @@ const ProductDetail = () => {
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}
-                      className={`px-6 py-3 text-sm transition-all ${
-                        selectedSize === size
-                          ? "bg-foreground text-background"
-                          : "border border-border hover:border-foreground"
-                      }`}
+                      className={`px-6 py-3 text-sm transition-all ${selectedSize === size
+                        ? "bg-foreground text-background"
+                        : "border border-border hover:border-foreground"
+                        }`}
                     >
                       {size}
                     </button>
@@ -190,11 +190,10 @@ const ProductDetail = () => {
                     <button
                       key={color}
                       onClick={() => setSelectedColor(color)}
-                      className={`px-6 py-3 text-sm transition-all ${
-                        selectedColor === color
-                          ? "bg-foreground text-background"
-                          : "border border-border hover:border-foreground"
-                      }`}
+                      className={`px-6 py-3 text-sm transition-all ${selectedColor === color
+                        ? "bg-foreground text-background"
+                        : "border border-border hover:border-foreground"
+                        }`}
                     >
                       {color}
                     </button>

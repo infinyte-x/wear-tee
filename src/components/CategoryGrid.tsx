@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "@tanstack/react-router";
 
 const categories = [
   {
@@ -32,7 +32,8 @@ const CategoryGrid = () => {
         {categories.map((category) => (
           <Link
             key={category.name}
-            to={`/products?category=${category.name}`}
+            to="/products"
+            search={{ category: category.name }}
             className="group relative aspect-[3/4] overflow-hidden bg-stone hover-lift"
           >
             <img

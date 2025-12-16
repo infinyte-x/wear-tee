@@ -12,8 +12,8 @@ interface Product {
   price: number;
   stock: number;
   category: string;
-  sizes: string[];
-  colors: string[];
+  sizes: string[] | null;
+  colors: string[] | null;
   images: string[];
   featured: boolean | null;
 }
@@ -37,7 +37,7 @@ const ProductCsvTools = ({ products, onImportComplete }: ProductCsvToolsProps) =
     }
 
     const headers = ['id', 'name', 'description', 'price', 'stock', 'category', 'sizes', 'colors', 'images', 'featured'];
-    
+
     const rows = products.map(product => [
       product.id || '',
       escapeCsvValue(product.name),
@@ -80,7 +80,7 @@ const ProductCsvTools = ({ products, onImportComplete }: ProductCsvToolsProps) =
 
     for (let i = 0; i < line.length; i++) {
       const char = line[i];
-      
+
       if (char === '"') {
         if (inQuotes && line[i + 1] === '"') {
           current += '"';
@@ -109,7 +109,7 @@ const ProductCsvTools = ({ products, onImportComplete }: ProductCsvToolsProps) =
     try {
       const text = await file.text();
       const lines = text.split('\n').filter(line => line.trim());
-      
+
       if (lines.length < 2) {
         throw new Error('CSV file must have a header row and at least one data row');
       }
@@ -117,7 +117,7 @@ const ProductCsvTools = ({ products, onImportComplete }: ProductCsvToolsProps) =
       const headers = parseCsvLine(lines[0]).map(h => h.toLowerCase().trim());
       const requiredHeaders = ['name', 'price', 'category'];
       const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
-      
+
       if (missingHeaders.length > 0) {
         throw new Error(`Missing required columns: ${missingHeaders.join(', ')}`);
       }
@@ -184,15 +184,15 @@ const ProductCsvTools = ({ products, onImportComplete }: ProductCsvToolsProps) =
       }
 
       setImportResults(results);
-      
+
       if (results.success > 0) {
         onImportComplete();
       }
     } catch (error: any) {
-      toast({ 
-        title: 'Import failed', 
-        description: error.message, 
-        variant: 'destructive' 
+      toast({
+        title: 'Import failed',
+        description: error.message,
+        variant: 'destructive'
       });
     } finally {
       setImporting(false);
@@ -261,8 +261,8 @@ const ProductCsvTools = ({ products, onImportComplete }: ProductCsvToolsProps) =
                 className="hidden"
               />
               <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={importing}
               >

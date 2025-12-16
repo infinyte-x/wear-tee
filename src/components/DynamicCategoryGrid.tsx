@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -81,7 +81,8 @@ const DynamicCategoryGrid = () => {
         {displayCategories.map((category) => (
           <Link
             key={category.id}
-            to={`/products?category=${category.name}`}
+            to="/products"
+            search={{ category: category.name }}
             className="group relative aspect-[3/4] overflow-hidden bg-stone hover-lift"
           >
             <img

@@ -1,17 +1,16 @@
-import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Package, Search, Filter } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import ImageUpload from '@/components/admin/ImageUpload';
 import ProductCsvTools from '@/components/admin/ProductCsvTools';
+import { useNavigate } from '@tanstack/react-router';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
+import { useState } from 'react';
 
 interface Product {
   id: string;
@@ -20,31 +19,18 @@ interface Product {
   price: number;
   stock: number;
   category: string;
-  sizes: string[];
-  colors: string[];
   images: string[];
   featured: boolean | null;
+  status: string | null;
+  sizes: string[] | null;
+  colors: string[] | null;
 }
 
-const emptyProduct = {
-  name: '',
-  description: '',
-  price: 0,
-  stock: 0,
-  category: '',
-  sizes: '',
-  colors: '',
-  images: [] as string[],
-  featured: false,
-};
-
 const AdminProducts = () => {
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [form, setForm] = useState(emptyProduct);
-  
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
 
   const { data: products, isLoading } = useQuery({
     queryKey: ['admin-products'],
@@ -52,40 +38,6 @@ const AdminProducts = () => {
       const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
       if (error) throw error;
       return data as Product[];
-    },
-  });
-
-  const saveMutation = useMutation({
-    mutationFn: async (data: typeof form) => {
-      const productData = {
-        name: data.name,
-        description: data.description || null,
-        price: data.price,
-        stock: data.stock,
-        category: data.category,
-        sizes: data.sizes.split(',').map(s => s.trim()).filter(Boolean),
-        colors: data.colors.split(',').map(c => c.trim()).filter(Boolean),
-        images: data.images,
-        featured: data.featured,
-      };
-
-      if (editingProduct) {
-        const { error } = await supabase.from('products').update(productData).eq('id', editingProduct.id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from('products').insert(productData);
-        if (error) throw error;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
-      setDialogOpen(false);
-      setEditingProduct(null);
-      setForm(emptyProduct);
-      toast({ title: editingProduct ? 'Product updated' : 'Product created' });
-    },
-    onError: (error: Error) => {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
     },
   });
 
@@ -103,214 +55,200 @@ const AdminProducts = () => {
     },
   });
 
-  const openEditDialog = (product: Product) => {
-    setEditingProduct(product);
-    setForm({
-      name: product.name,
-      description: product.description || '',
-      price: product.price,
-      stock: product.stock,
-      category: product.category,
-      sizes: product.sizes?.join(', ') || '',
-      colors: product.colors?.join(', ') || '',
-      images: product.images || [],
-      featured: product.featured || false,
-    });
-    setDialogOpen(true);
-  };
+  const filteredProducts = products?.filter(product =>
+    product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    product.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-  const openCreateDialog = () => {
-    setEditingProduct(null);
-    setForm(emptyProduct);
-    setDialogOpen(true);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    saveMutation.mutate(form);
+  const getStatusStyles = (status: string | null) => {
+    switch (status) {
+      case 'active':
+        return 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 hover:bg-emerald-500/20';
+      case 'draft':
+        return 'bg-amber-500/10 text-amber-600 border-amber-500/20 hover:bg-amber-500/20';
+      case 'archived':
+        return 'bg-muted text-muted-foreground border-border';
+      default:
+        return 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20';
+    }
   };
 
   return (
     <AdminLayout>
       <div className="space-y-6">
+        {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-serif text-foreground">Products</h1>
-            <p className="text-muted-foreground mt-1">Manage your product catalog</p>
+            <h1 className="text-2xl font-semibold text-foreground">Products</h1>
+            <p className="text-muted-foreground mt-1">
+              Manage your product catalog
+              {filteredProducts && <span className="text-foreground font-medium"> · {filteredProducts.length} items</span>}
+            </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <ProductCsvTools 
-              products={products || []} 
+            <ProductCsvTools
+              products={products || []}
               onImportComplete={() => queryClient.invalidateQueries({ queryKey: ['admin-products'] })}
             />
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <DialogTrigger asChild>
-                <Button onClick={openCreateDialog} className="bg-charcoal text-cream hover:bg-charcoal/90">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Product
-                </Button>
-              </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle className="font-serif">
-                  {editingProduct ? 'Edit Product' : 'Add New Product'}
-                </DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Name</Label>
-                    <Input
-                      value={form.name}
-                      onChange={(e) => setForm({ ...form, name: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Category</Label>
-                    <Input
-                      value={form.category}
-                      onChange={(e) => setForm({ ...form, category: e.target.value })}
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Description</Label>
-                  <Textarea
-                    value={form.description}
-                    onChange={(e) => setForm({ ...form, description: e.target.value })}
-                    rows={3}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Price ($)</Label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={form.price}
-                      onChange={(e) => setForm({ ...form, price: parseFloat(e.target.value) || 0 })}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Stock</Label>
-                    <Input
-                      type="number"
-                      value={form.stock}
-                      onChange={(e) => setForm({ ...form, stock: parseInt(e.target.value) || 0 })}
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Sizes (comma-separated)</Label>
-                  <Input
-                    value={form.sizes}
-                    onChange={(e) => setForm({ ...form, sizes: e.target.value })}
-                    placeholder="XS, S, M, L, XL"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Colors (comma-separated)</Label>
-                  <Input
-                    value={form.colors}
-                    onChange={(e) => setForm({ ...form, colors: e.target.value })}
-                    placeholder="Black, Navy, Cream"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Product Images</Label>
-                  <ImageUpload
-                    images={form.images}
-                    onChange={(images) => setForm({ ...form, images })}
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="featured"
-                    checked={form.featured}
-                    onChange={(e) => setForm({ ...form, featured: e.target.checked })}
-                  />
-                  <Label htmlFor="featured">Featured product</Label>
-                </div>
-                <div className="flex gap-3 pt-4">
-                  <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button type="submit" disabled={saveMutation.isPending} className="bg-charcoal text-cream">
-                    {saveMutation.isPending ? 'Saving...' : 'Save Product'}
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
+            <Button
+              onClick={() => navigate({ to: '/admin/products/new' })}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Product
+            </Button>
           </div>
         </div>
 
+        {/* Search Bar */}
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search products..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 bg-card border-border/50 focus:border-accent transition-colors"
+          />
+        </div>
+
         {/* Products Table */}
-        <div className="bg-card border border-border">
+        <div className="bg-card border border-border/50 rounded-xl overflow-hidden shadow-sm">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Product</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Price</TableHead>
-                <TableHead>Stock</TableHead>
-                <TableHead>Featured</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+              <TableRow className="bg-muted/30 hover:bg-muted/30">
+                <TableHead className="font-semibold">Product</TableHead>
+                <TableHead className="font-semibold">Category</TableHead>
+                <TableHead className="font-semibold">Status</TableHead>
+                <TableHead className="font-semibold">Price</TableHead>
+                <TableHead className="font-semibold">Stock</TableHead>
+                <TableHead className="font-semibold">Featured</TableHead>
+                <TableHead className="text-right font-semibold">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    Loading...
-                  </TableCell>
-                </TableRow>
-              ) : products && products.length > 0 ? (
-                products.map((product) => (
-                  <TableRow key={product.id}>
+                // Skeleton loading
+                [...Array(5)].map((_, i) => (
+                  <TableRow key={i} className="animate-pulse">
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        {product.images?.[0] && (
-                          <img
-                            src={product.images[0]}
-                            alt={product.name}
-                            className="w-12 h-12 object-cover"
-                          />
-                        )}
-                        <span className="font-medium">{product.name}</span>
+                        <div className="w-12 h-12 bg-muted rounded-lg" />
+                        <div className="h-4 w-32 bg-muted rounded" />
                       </div>
                     </TableCell>
-                    <TableCell>{product.category}</TableCell>
-                    <TableCell>${product.price.toFixed(2)}</TableCell>
-                    <TableCell>{product.stock}</TableCell>
-                    <TableCell>{product.featured ? 'Yes' : 'No'}</TableCell>
+                    <TableCell><div className="h-4 w-20 bg-muted rounded" /></TableCell>
+                    <TableCell><div className="h-6 w-16 bg-muted rounded-full" /></TableCell>
+                    <TableCell><div className="h-4 w-16 bg-muted rounded" /></TableCell>
+                    <TableCell><div className="h-4 w-12 bg-muted rounded" /></TableCell>
+                    <TableCell><div className="h-4 w-8 bg-muted rounded" /></TableCell>
+                    <TableCell><div className="h-8 w-20 bg-muted rounded ml-auto" /></TableCell>
+                  </TableRow>
+                ))
+              ) : filteredProducts && filteredProducts.length > 0 ? (
+                filteredProducts.map((product, index) => (
+                  <TableRow
+                    key={product.id}
+                    className="group transition-colors hover:bg-muted/50"
+                    style={{ animationDelay: `${index * 30}ms` }}
+                  >
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-muted rounded-lg overflow-hidden flex-shrink-0 ring-1 ring-border/50 group-hover:ring-border transition-all">
+                          {product.images?.[0] ? (
+                            <img
+                              src={product.images[0]}
+                              alt={product.name}
+                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Package className="h-5 w-5 text-muted-foreground/50" />
+                            </div>
+                          )}
+                        </div>
+                        <span className="font-medium line-clamp-2 group-hover:text-accent transition-colors">{product.name}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm text-muted-foreground">{product.category}</span>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "capitalize font-medium transition-colors border",
+                          getStatusStyles(product.status)
+                        )}
+                      >
+                        {product.status || 'active'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <span className="font-mono font-medium">${product.price.toFixed(2)}</span>
+                    </TableCell>
+                    <TableCell>
+                      <span className={cn(
+                        "font-medium",
+                        product.stock < 10 && "text-amber-600",
+                        product.stock === 0 && "text-red-600"
+                      )}>
+                        {product.stock}
+                        {product.stock < 10 && product.stock > 0 && (
+                          <span className="text-xs text-amber-600 ml-1">(Low)</span>
+                        )}
+                        {product.stock === 0 && (
+                          <span className="text-xs text-red-600 ml-1">(Out)</span>
+                        )}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      {product.featured ? (
+                        <span className="text-accent font-medium">★ Yes</span>
+                      ) : (
+                        <span className="text-muted-foreground">No</span>
+                      )}
+                    </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => openEditDialog(product)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => deleteMutation.mutate(product.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center justify-end gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => navigate({ to: '/admin/products/$productId', params: { productId: product.id } })}
+                          className="hover:bg-accent/10 hover:text-accent transition-colors"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => deleteMutation.mutate(product.id)}
+                          className="hover:bg-red-500/10 hover:text-red-500 transition-colors"
+                          disabled={deleteMutation.isPending}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    No products yet
+                  <TableCell colSpan={7} className="text-center py-16">
+                    <Package className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+                    <p className="text-muted-foreground font-medium">
+                      {searchQuery ? 'No products match your search' : 'No products yet'}
+                    </p>
+                    <p className="text-sm text-muted-foreground/60 mt-1">
+                      {searchQuery ? 'Try adjusting your search terms' : 'Add your first product to get started'}
+                    </p>
+                    {!searchQuery && (
+                      <Button
+                        onClick={() => navigate({ to: '/admin/products/new' })}
+                        className="mt-4 bg-accent text-accent-foreground hover:bg-accent/90"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Product
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               )}
@@ -323,3 +261,4 @@ const AdminProducts = () => {
 };
 
 export default AdminProducts;
+

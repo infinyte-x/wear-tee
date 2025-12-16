@@ -1,11 +1,13 @@
 import { useEffect, useState, useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
+import { getRouteApi } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import ProductCard from "@/components/ProductCard";
 import Footer from "@/components/Footer";
 import ProductFilters, { FilterState } from "@/components/ProductFilters";
 import { getCart, getCartCount } from "@/lib/cart";
+
+const routeApi = getRouteApi('/products')
 
 interface Product {
   id: string;
@@ -18,9 +20,8 @@ interface Product {
 }
 
 const Products = () => {
-  const [searchParams] = useSearchParams();
-  const categoryFromUrl = searchParams.get("category");
-  
+  const { category: categoryFromUrl } = routeApi.useSearch()
+
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>(categoryFromUrl || "All");
@@ -98,27 +99,27 @@ const Products = () => {
     // Search filter
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
-      result = result.filter(p => 
+      result = result.filter(p =>
         p.name.toLowerCase().includes(searchLower) ||
         p.category.toLowerCase().includes(searchLower)
       );
     }
 
     // Price filter
-    result = result.filter(p => 
+    result = result.filter(p =>
       p.price >= filters.priceRange[0] && p.price <= filters.priceRange[1]
     );
 
     // Size filter
     if (filters.sizes.length > 0) {
-      result = result.filter(p => 
+      result = result.filter(p =>
         p.sizes?.some(s => filters.sizes.includes(s))
       );
     }
 
     // Color filter
     if (filters.colors.length > 0) {
-      result = result.filter(p => 
+      result = result.filter(p =>
         p.colors?.some(c => filters.colors.includes(c))
       );
     }
@@ -166,11 +167,10 @@ const Products = () => {
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
-              className={`text-xs tracking-[0.2em] uppercase whitespace-nowrap transition-all pb-4 -mb-[1px] ${
-                selectedCategory === category
-                  ? "text-foreground border-b-2 border-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
+              className={`text-xs tracking-[0.2em] uppercase whitespace-nowrap transition-all pb-4 -mb-[1px] ${selectedCategory === category
+                ? "text-foreground border-b-2 border-foreground"
+                : "text-muted-foreground hover:text-foreground"
+                }`}
             >
               {category}
             </button>
@@ -188,13 +188,15 @@ const Products = () => {
 
         {/* Products Grid */}
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="animate-pulse">
-                <div className="bg-stone aspect-[3/4] mb-4" />
-                <div className="h-4 bg-stone mb-2 w-1/2" />
-                <div className="h-6 bg-stone mb-2" />
-                <div className="h-4 bg-stone w-1/3" />
+              <div key={i} className="space-y-4">
+                <div className="shimmer aspect-[3/4] rounded-sm" />
+                <div className="space-y-2">
+                  <div className="shimmer h-3 w-1/3 rounded" />
+                  <div className="shimmer h-5 w-full rounded" />
+                  <div className="shimmer h-4 w-1/4 rounded" />
+                </div>
               </div>
             ))}
           </div>
@@ -207,7 +209,7 @@ const Products = () => {
             <p className="text-sm text-muted-foreground mb-6">
               {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''} found
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8 stagger-children">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8 stagger-children">
               {filteredProducts.map((product) => (
                 <ProductCard
                   key={product.id}
