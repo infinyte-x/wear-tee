@@ -1,6 +1,7 @@
 import { ReactNode, useState, useEffect } from 'react';
 import { Navigate } from '@tanstack/react-router';
 import { useAuth } from '@/hooks/useAuth';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 import AdminSidebar from './AdminSidebar';
 import { Loader2, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,7 @@ interface AdminLayoutProps {
 
 const AdminLayout = ({ children }: AdminLayoutProps) => {
   const { user, isAdmin, loading } = useAuth();
+  const { settings } = useSiteSettings();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -62,7 +64,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         >
           {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </Button>
-        <span className="ml-3 font-serif text-cream text-lg">ATELIER</span>
+        <span className="ml-3 font-serif text-cream text-lg">{settings?.store_name?.toUpperCase() || 'ATELIER'}</span>
       </div>
 
       {/* Mobile Overlay */}

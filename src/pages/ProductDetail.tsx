@@ -7,16 +7,18 @@ import { Button } from "@/components/ui/button";
 import { addToCart, getCart, getCartCount } from "@/lib/cart";
 import { toast } from "sonner";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ProductReviews } from "@/components/ProductReviews";
+import { WishlistButton } from "@/components/WishlistButton";
 
 interface Product {
   id: string;
   name: string;
-  description: string;
+  description: string | null;
   price: number;
   images: string[];
   category: string;
-  sizes: string[];
-  colors: string[];
+  sizes: string[] | null;
+  colors: string[] | null;
   stock: number;
 }
 
@@ -105,7 +107,7 @@ const ProductDetail = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar cartCount={cartCount} />
 
-      <main className="flex-1 container mx-auto px-6 py-16">
+      <main className="flex-1 container mx-auto px-6 pt-24 pb-16">
         <div className="grid md:grid-cols-2 gap-12 lg:gap-20">
           {/* Product Images */}
           <div className="fade-in space-y-4">
@@ -158,7 +160,9 @@ const ProductDetail = () => {
               <p className="text-2xl">${product.price.toFixed(2)}</p>
             </div>
 
-            <p className="leading-relaxed text-muted-foreground">{product.description}</p>
+            {product.description && (
+              <p className="leading-relaxed text-muted-foreground">{product.description}</p>
+            )}
 
             {/* Size Selection */}
             {product.sizes && product.sizes.length > 0 && (
@@ -202,14 +206,17 @@ const ProductDetail = () => {
               </div>
             )}
 
-            {/* Add to Cart */}
-            <Button
-              onClick={handleAddToCart}
-              className="w-full py-6 text-xs tracking-widest uppercase bg-foreground hover:bg-foreground/90"
-              disabled={product.stock === 0}
-            >
-              {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
-            </Button>
+            {/* Add to Cart & Wishlist */}
+            <div className="flex gap-3">
+              <Button
+                onClick={handleAddToCart}
+                className="flex-1 py-6 text-xs tracking-widest uppercase bg-foreground hover:bg-foreground/90"
+                disabled={product.stock === 0}
+              >
+                {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
+              </Button>
+              <WishlistButton productId={product.id} variant="icon" size="lg" className="px-6" />
+            </div>
 
             {/* Product Details */}
             <div className="pt-8 border-t border-border space-y-4 text-sm text-muted-foreground">
@@ -220,6 +227,11 @@ const ProductDetail = () => {
           </div>
         </div>
       </main>
+
+      {/* Reviews Section */}
+      <div className="container mx-auto px-6 lg:px-8">
+        <ProductReviews productId={product.id} productName={product.name} />
+      </div>
 
       <Footer />
     </div>

@@ -17,14 +17,24 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { X, Upload, Star } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { X, Upload, Star, Crop } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useRef, useState } from 'react';
+import { ImageCropDialog } from './ImageCropDialog';
+
+// Image requirements
+const MIN_WIDTH = 800;
+const MIN_HEIGHT = 800;
+const REQUIRED_ASPECT_RATIO = 1; // 1:1 (square)
+const ASPECT_RATIO_TOLERANCE = 0.05; // 5% tolerance
+const IMAGES_PER_COLOR = 4;
 
 interface ProductMediaProps {
     images: string[];
     onChange: (images: string[]) => void;
+    colors?: string[];
 }
 
 interface SortableImageProps {
@@ -100,10 +110,17 @@ const SortableImage = ({ url, index, onRemove, onSetFeatured, isFeatured }: Sort
     );
 };
 
-const ProductMedia = ({ images, onChange }: ProductMediaProps) => {
+const ProductMedia = ({ images, onChange, colors = [] }: ProductMediaProps) => {
     const { toast } = useToast();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [uploading, setUploading] = useState(false);
+    const [validationErrors, setValidationErrors] = useState<string[]>([]);
+
+    // Crop dialog state
+    const [cropDialogOpen, setCropDialogOpen] = useState(false);
+    const [currentCropImage, setCurrentCropImage] = useState<string | null>(null);
+    const [currentCropFileName, setCurrentCropFileName] = useState<string>('');
+    const [pendingFiles, setPendingFiles] = useState<File[]>([]);
 
     const sensors = useSensors(
         useSensor(PointerSensor),
@@ -111,6 +128,40 @@ const ProductMedia = ({ images, onChange }: ProductMediaProps) => {
             coordinateGetter: sortableKeyboardCoordinates,
         })
     );
+
+    // Validate image dimensions and aspect ratio
+    const validateImage = (file: File): Promise<{ valid: boolean; error?: string }> => {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => {
+                const width = img.width;
+                const height = img.height;
+                const aspectRatio = width / height;
+
+                if (width < MIN_WIDTH || height < MIN_HEIGHT) {
+                    resolve({
+                        valid: false,
+                        error: `${file.name}: Image must be at least ${MIN_WIDTH}x${MIN_HEIGHT}px (got ${width}x${height})`
+                    });
+                    return;
+                }
+
+                if (Math.abs(aspectRatio - REQUIRED_ASPECT_RATIO) > ASPECT_RATIO_TOLERANCE) {
+                    resolve({
+                        valid: false,
+                        error: `${file.name}: Image must have 2:3 aspect ratio (${MIN_WIDTH}x${MIN_HEIGHT})`
+                    });
+                    return;
+                }
+
+                resolve({ valid: true });
+            };
+            img.onerror = () => {
+                resolve({ valid: false, error: `${file.name}: Could not read image` });
+            };
+            img.src = URL.createObjectURL(file);
+        });
+    };
 
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
@@ -122,34 +173,65 @@ const ProductMedia = ({ images, onChange }: ProductMediaProps) => {
         }
     };
 
-    const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Handle file selection - open crop dialog for each file
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
         if (!files || files.length === 0) return;
 
+        setValidationErrors([]);
+        const fileArray = Array.from(files);
+        setPendingFiles(fileArray.slice(1)); // Store remaining files
+
+        // Open crop dialog for first file
+        const firstFile = fileArray[0];
+        const imageUrl = URL.createObjectURL(firstFile);
+        setCurrentCropImage(imageUrl);
+        setCurrentCropFileName(firstFile.name);
+        setCropDialogOpen(true);
+
+        // Reset file input
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
+
+    // Upload blob to Supabase
+    const uploadBlob = async (blob: Blob, fileName: string): Promise<string> => {
+        const fileExt = fileName.split('.').pop() || 'jpg';
+        const newFileName = `${crypto.randomUUID()}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+            .from('product-images')
+            .upload(newFileName, blob);
+
+        if (uploadError) throw uploadError;
+
+        const { data } = supabase.storage
+            .from('product-images')
+            .getPublicUrl(newFileName);
+
+        return data.publicUrl;
+    };
+
+    // Handle crop completion
+    const handleCropComplete = async (croppedBlob: Blob, fileName: string) => {
         setUploading(true);
-        const newImages: string[] = [];
 
         try {
-            for (const file of Array.from(files)) {
-                const fileExt = file.name.split('.').pop();
-                const fileName = `${crypto.randomUUID()}.${fileExt}`;
-                const filePath = `${fileName}`;
+            const publicUrl = await uploadBlob(croppedBlob, fileName);
+            onChange([...images, publicUrl]);
+            toast({ title: 'Image uploaded successfully' });
 
-                const { error: uploadError } = await supabase.storage
-                    .from('product-images')
-                    .upload(filePath, file);
+            // Process next file if any
+            if (pendingFiles.length > 0) {
+                const nextFile = pendingFiles[0];
+                setPendingFiles(pendingFiles.slice(1));
 
-                if (uploadError) throw uploadError;
-
-                const { data } = supabase.storage
-                    .from('product-images')
-                    .getPublicUrl(filePath);
-
-                newImages.push(data.publicUrl);
+                const imageUrl = URL.createObjectURL(nextFile);
+                setCurrentCropImage(imageUrl);
+                setCurrentCropFileName(nextFile.name);
+                setCropDialogOpen(true);
             }
-
-            onChange([...images, ...newImages]);
-            toast({ title: `${newImages.length} image(s) uploaded` });
         } catch (error: any) {
             toast({
                 title: 'Upload failed',
@@ -158,8 +240,30 @@ const ProductMedia = ({ images, onChange }: ProductMediaProps) => {
             });
         } finally {
             setUploading(false);
-            if (fileInputRef.current) {
-                fileInputRef.current.value = '';
+        }
+    };
+
+    // Handle crop dialog close (skip current file)
+    const handleCropDialogClose = (open: boolean) => {
+        if (!open) {
+            // Clean up current image URL
+            if (currentCropImage) {
+                URL.revokeObjectURL(currentCropImage);
+            }
+            setCurrentCropImage(null);
+            setCurrentCropFileName('');
+
+            // Process next file if any
+            if (pendingFiles.length > 0) {
+                const nextFile = pendingFiles[0];
+                setPendingFiles(pendingFiles.slice(1));
+
+                const imageUrl = URL.createObjectURL(nextFile);
+                setCurrentCropImage(imageUrl);
+                setCurrentCropFileName(nextFile.name);
+                setCropDialogOpen(true);
+            } else {
+                setCropDialogOpen(false);
             }
         }
     };
@@ -176,6 +280,10 @@ const ProductMedia = ({ images, onChange }: ProductMediaProps) => {
         onChange(newImages);
     };
 
+    // Calculate required images based on colors
+    const requiredImages = colors.length > 0 ? colors.length * IMAGES_PER_COLOR : IMAGES_PER_COLOR;
+    const hasEnoughImages = images.length >= requiredImages;
+
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -191,13 +299,52 @@ const ProductMedia = ({ images, onChange }: ProductMediaProps) => {
                 </Button>
             </div>
 
+            {/* Image Requirements */}
+            <Alert variant="info" className="bg-muted/50">
+                <AlertDescription className="text-xs">
+                    <p className="font-medium mb-1">Image Requirements:</p>
+                    <ul className="list-disc list-inside space-y-0.5 text-muted-foreground">
+                        <li>Minimum size: <strong>800 × 800 pixels</strong></li>
+                        <li>Aspect ratio: <strong>1:1</strong> (square)</li>
+                        <li>Upload <strong>4 images per color variant</strong></li>
+                        {colors.length > 0 && (
+                            <li>
+                                {colors.length} color(s) selected = <strong>{requiredImages} images required</strong>
+                            </li>
+                        )}
+                    </ul>
+                </AlertDescription>
+            </Alert>
+
+            {/* Validation Errors */}
+            {validationErrors.length > 0 && (
+                <Alert variant="destructive">
+                    <AlertDescription>
+                        <p className="font-medium mb-1">Images rejected:</p>
+                        <ul className="list-disc list-inside text-xs">
+                            {validationErrors.map((error, i) => (
+                                <li key={i}>{error}</li>
+                            ))}
+                        </ul>
+                    </AlertDescription>
+                </Alert>
+            )}
+
+            {/* Image count status */}
+            {images.length > 0 && (
+                <div className={`text-xs ${hasEnoughImages ? 'text-green-600' : 'text-amber-600'}`}>
+                    {images.length} / {requiredImages} images uploaded
+                    {!hasEnoughImages && ` (${requiredImages - images.length} more needed)`}
+                </div>
+            )}
+
             <Input
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
                 multiple
                 className="hidden"
-                onChange={handleUpload}
+                onChange={handleFileSelect}
             />
 
             <DndContext
@@ -228,6 +375,17 @@ const ProductMedia = ({ images, onChange }: ProductMediaProps) => {
                         <p>Drag files here or click Add Media</p>
                     </div>
                 </div>
+            )}
+
+            {/* Image Crop Dialog */}
+            {currentCropImage && (
+                <ImageCropDialog
+                    open={cropDialogOpen}
+                    onOpenChange={handleCropDialogClose}
+                    imageSrc={currentCropImage}
+                    fileName={currentCropFileName}
+                    onCropComplete={handleCropComplete}
+                />
             )}
         </div>
     );

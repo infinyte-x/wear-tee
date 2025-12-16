@@ -1,10 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import AdminLayout from '@/components/admin/AdminLayout';
+import { StatisticCard } from '@/components/admin/StatisticCard';
 import { Link } from '@tanstack/react-router';
-import { Package, ShoppingCart, Users, DollarSign, TrendingUp, ArrowUpRight, CheckCircle, Circle, Store, Truck, CreditCard, Image, Settings, ArrowRight } from 'lucide-react';
+import { Package, ShoppingCart, Users, DollarSign, TrendingUp, CheckCircle, Circle, Store, Truck, CreditCard, Image, Settings, BarChart3, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+import { useAnalytics } from '@/hooks/useAnalytics';
+import { LowStockAlerts } from '@/components/admin/LowStockAlerts';
 
 // Setup guide steps
 const setupSteps = [
@@ -20,91 +20,66 @@ const Dashboard = () => {
   const completedSteps = setupSteps.filter(s => s.completed).length;
   const progressPercent = Math.round((completedSteps / setupSteps.length) * 100);
 
-  const { data: stats, isLoading: statsLoading } = useQuery({
-    queryKey: ['admin-stats'],
-    queryFn: async () => {
-      const [productsRes, ordersRes, customersRes] = await Promise.all([
-        supabase.from('products').select('id', { count: 'exact', head: true }),
-        supabase.from('orders').select('id, total', { count: 'exact' }),
-        supabase.from('profiles').select('id', { count: 'exact', head: true }),
-      ]);
-
-      const totalRevenue = ordersRes.data?.reduce((sum, order) => sum + Number(order.total), 0) || 0;
-
-      return {
-        products: productsRes.count || 0,
-        orders: ordersRes.count || 0,
-        customers: customersRes.count || 0,
-        revenue: totalRevenue,
-      };
-    },
-  });
-
-  const { data: recentOrders, isLoading: ordersLoading } = useQuery({
-    queryKey: ['recent-orders'],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from('orders')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(5);
-      return data || [];
-    },
-  });
+  const { data: analytics, isLoading } = useAnalytics();
 
   const statCards = [
     {
       label: 'Products',
-      value: stats?.products || 0,
+      value: analytics?.totalProducts || 0,
       icon: Package,
       gradient: 'from-orange-500/10 to-amber-500/5',
       iconBg: 'bg-orange-500/10',
       iconColor: 'text-orange-500',
-      trend: '+12%'
+      trend: 0, // Products don't have trend
     },
     {
       label: 'Orders',
-      value: stats?.orders || 0,
+      value: analytics?.totalOrders || 0,
       icon: ShoppingCart,
       gradient: 'from-blue-500/10 to-indigo-500/5',
       iconBg: 'bg-blue-500/10',
       iconColor: 'text-blue-500',
-      trend: '+8%'
+      trend: analytics?.ordersTrend || 0,
     },
     {
       label: 'Customers',
-      value: stats?.customers || 0,
+      value: analytics?.totalCustomers || 0,
       icon: Users,
       gradient: 'from-purple-500/10 to-pink-500/5',
       iconBg: 'bg-purple-500/10',
       iconColor: 'text-purple-500',
-      trend: '+24%'
+      trend: analytics?.customersTrend || 0,
     },
     {
       label: 'Revenue',
-      value: `৳${(stats?.revenue || 0).toLocaleString()}`,
+      value: `৳${(analytics?.totalRevenue || 0).toLocaleString()}`,
       icon: DollarSign,
       gradient: 'from-emerald-500/10 to-green-500/5',
       iconBg: 'bg-emerald-500/10',
       iconColor: 'text-emerald-500',
-      trend: '+18%'
+      trend: analytics?.revenueTrend || 0,
     },
   ];
 
   const getStatusStyles = (status: string) => {
     switch (status) {
       case 'delivered':
-        return 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20';
+        return 'bg-emerald-500/10 text-emerald-600';
       case 'shipped':
-        return 'bg-blue-500/10 text-blue-600 border-blue-500/20';
+        return 'bg-blue-500/10 text-blue-600';
       case 'processing':
-        return 'bg-amber-500/10 text-amber-600 border-amber-500/20';
+        return 'bg-amber-500/10 text-amber-600';
       case 'cancelled':
-        return 'bg-red-500/10 text-red-600 border-red-500/20';
+        return 'bg-red-500/10 text-red-600';
+      case 'pending':
+        return 'bg-gray-500/10 text-gray-600';
       default:
-        return 'bg-muted text-muted-foreground border-border';
+        return 'bg-muted text-muted-foreground';
     }
   };
+
+  // Calculate max revenue for chart scaling
+  const maxRevenue = Math.max(...(analytics?.dailyRevenue?.map(d => d.revenue) || [1]));
 
   return (
     <AdminLayout>
@@ -115,13 +90,15 @@ const Dashboard = () => {
             <h1 className="text-2xl font-semibold text-foreground">Dashboard</h1>
             <p className="text-muted-foreground mt-1">Welcome back! Here's your store overview.</p>
           </div>
-          <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 px-4 py-2 rounded-lg">
-            <TrendingUp className="h-4 w-4 text-emerald-500" />
-            <span>All metrics trending up</span>
-          </div>
+          {analytics && analytics.revenueTrend > 0 && (
+            <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground bg-emerald-500/10 px-4 py-2 rounded-lg">
+              <TrendingUp className="h-4 w-4 text-emerald-500" />
+              <span className="text-emerald-600">Revenue up {analytics.revenueTrend}% this week</span>
+            </div>
+          )}
         </div>
 
-        {/* Setup Guide - Zatiq Style */}
+        {/* Setup Guide */}
         {progressPercent < 100 && (
           <div className="bg-card border border-border rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
@@ -178,103 +155,181 @@ const Dashboard = () => {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {statCards.map((stat, index) => (
-            <div
+          {statCards.map((stat) => (
+            <StatisticCard
               key={stat.label}
-              className={cn(
-                "relative overflow-hidden bg-card border border-border/50 p-6 rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-border group",
-                statsLoading && "animate-pulse"
-              )}
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              {/* Background gradient */}
-              <div className={cn("absolute inset-0 bg-gradient-to-br opacity-50 transition-opacity duration-300 group-hover:opacity-100", stat.gradient)} />
-
-              <div className="relative flex items-start justify-between">
-                <div className="space-y-2">
-                  <p className="text-xs tracking-widest uppercase text-muted-foreground font-medium">{stat.label}</p>
-                  <p className="text-3xl font-serif tracking-tight">{statsLoading ? '—' : stat.value}</p>
-                  <div className="flex items-center gap-1 text-xs text-emerald-500">
-                    <ArrowUpRight className="h-3 w-3" />
-                    <span>{stat.trend}</span>
-                  </div>
-                </div>
-                <div className={cn("p-3 rounded-xl transition-all duration-300 group-hover:scale-110", stat.iconBg)}>
-                  <stat.icon className={cn("h-5 w-5", stat.iconColor)} />
-                </div>
-              </div>
-            </div>
+              title={stat.label}
+              value={stat.value}
+              icon={stat.icon}
+              trend={stat.trend !== 0 ? {
+                value: Math.abs(stat.trend),
+                isPositive: stat.trend > 0,
+              } : undefined}
+              gradient={stat.gradient}
+              iconBg={stat.iconBg}
+              iconColor={stat.iconColor}
+              isLoading={isLoading}
+            />
           ))}
         </div>
 
-        {/* Recent Orders */}
-        <div className="bg-card border border-border/50 rounded-xl overflow-hidden">
-          <div className="p-6 border-b border-border/50 bg-gradient-to-r from-muted/30 to-transparent">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-serif">Recent Orders</h2>
-              <a href="/admin/orders" className="text-sm text-accent hover:underline transition-colors">View all →</a>
-            </div>
-          </div>
-          <div className="p-6">
-            {ordersLoading ? (
-              <div className="space-y-4">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="flex items-center justify-between py-4 animate-pulse">
-                    <div className="space-y-2">
-                      <div className="h-4 w-32 bg-muted rounded" />
-                      <div className="h-3 w-24 bg-muted rounded" />
-                    </div>
-                    <div className="space-y-2 text-right">
-                      <div className="h-4 w-16 bg-muted rounded ml-auto" />
-                      <div className="h-5 w-20 bg-muted rounded ml-auto" />
-                    </div>
-                  </div>
-                ))}
+        {/* Charts and Analytics Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Revenue Chart */}
+          <div className="lg:col-span-2 bg-card border border-border rounded-xl p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-lg font-medium">Revenue Overview</h2>
+                <p className="text-sm text-muted-foreground">Last 7 days</p>
               </div>
-            ) : recentOrders && recentOrders.length > 0 ? (
-              <div className="space-y-2">
-                {recentOrders.map((order: any, index: number) => (
-                  <div
-                    key={order.id}
-                    className="flex items-center justify-between py-4 px-4 -mx-4 rounded-lg transition-all duration-300 hover:bg-muted/50 group"
-                    style={{ animationDelay: `${index * 50}ms` }}
-                  >
-                    <div>
-                      <p className="font-medium group-hover:text-accent transition-colors">{order.phone || 'Guest Order'}</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {new Date(order.created_at).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </p>
-                    </div>
-                    <div className="text-right flex items-center gap-4">
-                      <p className="font-medium font-mono">${Number(order.total).toFixed(2)}</p>
-                      <span className={cn(
-                        "text-xs px-3 py-1.5 rounded-full border font-medium capitalize",
-                        getStatusStyles(order.status)
-                      )}>
-                        {order.status}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+              <BarChart3 className="h-5 w-5 text-muted-foreground" />
+            </div>
+
+            {isLoading ? (
+              <div className="flex items-center justify-center h-48">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
               </div>
             ) : (
-              <div className="text-center py-12">
-                <ShoppingCart className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                <p className="text-muted-foreground">No orders yet</p>
-                <p className="text-sm text-muted-foreground/60 mt-1">Orders will appear here once customers start purchasing</p>
+              <div className="space-y-4">
+                {/* Simple bar chart */}
+                <div className="flex items-end justify-between h-40 gap-2">
+                  {analytics?.dailyRevenue?.map((day, i) => (
+                    <div key={i} className="flex-1 flex flex-col items-center gap-2">
+                      <div className="w-full flex flex-col items-center">
+                        <span className="text-xs font-medium text-muted-foreground mb-1">
+                          {day.orders > 0 && `${day.orders}`}
+                        </span>
+                        <div
+                          className="w-full bg-accent/80 rounded-t-md transition-all duration-500 hover:bg-accent"
+                          style={{
+                            height: `${maxRevenue > 0 ? (day.revenue / maxRevenue) * 120 : 4}px`,
+                            minHeight: '4px',
+                          }}
+                          title={`৳${day.revenue.toLocaleString()}`}
+                        />
+                      </div>
+                      <span className="text-xs text-muted-foreground">{day.date}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Totals */}
+                <div className="flex items-center justify-between pt-4 border-t border-border">
+                  <div>
+                    <p className="text-sm text-muted-foreground">7-day total</p>
+                    <p className="text-xl font-semibold">
+                      ৳{analytics?.dailyRevenue?.reduce((sum, d) => sum + d.revenue, 0).toLocaleString() || 0}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-muted-foreground">Orders</p>
+                    <p className="text-xl font-semibold">
+                      {analytics?.dailyRevenue?.reduce((sum, d) => sum + d.orders, 0) || 0}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Order Status Breakdown */}
+          <div className="bg-card border border-border rounded-xl p-6">
+            <h2 className="text-lg font-medium mb-4">Order Status</h2>
+
+            {isLoading ? (
+              <div className="flex items-center justify-center h-48">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : analytics?.ordersByStatus && analytics.ordersByStatus.length > 0 ? (
+              <div className="space-y-3">
+                {analytics.ordersByStatus.map((item) => {
+                  const percentage = analytics.totalOrders > 0
+                    ? Math.round((item.count / analytics.totalOrders) * 100)
+                    : 0;
+                  return (
+                    <div key={item.status} className="space-y-1">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className={cn(
+                          "px-2 py-0.5 rounded-full text-xs font-medium capitalize",
+                          getStatusStyles(item.status)
+                        )}>
+                          {item.status}
+                        </span>
+                        <span className="text-muted-foreground">
+                          {item.count} ({percentage}%)
+                        </span>
+                      </div>
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className={cn(
+                            "h-full rounded-full transition-all duration-500",
+                            item.status === 'delivered' && "bg-emerald-500",
+                            item.status === 'shipped' && "bg-blue-500",
+                            item.status === 'processing' && "bg-amber-500",
+                            item.status === 'pending' && "bg-gray-400",
+                            item.status === 'cancelled' && "bg-red-500"
+                          )}
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-48 text-muted-foreground">
+                <ShoppingCart className="h-12 w-12 opacity-30 mb-2" />
+                <p>No orders yet</p>
               </div>
             )}
           </div>
         </div>
+
+        {/* Top Products */}
+        <div className="bg-card border border-border rounded-xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-medium">Top Products</h2>
+            <Link to="/admin/products" className="text-sm text-accent hover:underline">
+              View all →
+            </Link>
+          </div>
+
+          {isLoading ? (
+            <div className="flex items-center justify-center h-32">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : analytics?.topProducts && analytics.topProducts.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              {analytics.topProducts.map((product, i) => (
+                <div
+                  key={product.id}
+                  className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-accent/10 text-accent font-semibold text-sm">
+                    #{i + 1}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">{product.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {product.orders} sold · ৳{product.revenue.toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">
+              <Package className="h-12 w-12 opacity-30 mb-2" />
+              <p>No product sales yet</p>
+            </div>
+          )}
+        </div>
+
+        {/* Stock Alerts */}
+        <LowStockAlerts />
       </div>
     </AdminLayout>
   );
 };
 
 export default Dashboard;
-

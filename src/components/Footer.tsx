@@ -1,16 +1,19 @@
 import { Link } from "@tanstack/react-router";
 import { Instagram, Facebook, Twitter, Mail } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const { settings } = useSiteSettings();
 
+  // Dynamic social links
   const socialLinks = [
-    { icon: Instagram, href: "#", label: "Instagram" },
-    { icon: Facebook, href: "#", label: "Facebook" },
-    { icon: Twitter, href: "#", label: "Twitter" },
-    { icon: Mail, href: "#", label: "Email" },
-  ];
+    { icon: Instagram, href: settings?.instagram_url, label: "Instagram" },
+    { icon: Facebook, href: settings?.facebook_url, label: "Facebook" },
+    { icon: Twitter, href: settings?.tiktok_url, label: "TikTok" }, // Using TikTok instead of Twitter/X as per schema
+    { icon: Mail, href: settings?.shop_email ? `mailto:${settings.shop_email}` : null, label: "Email" },
+  ].filter(link => link.href); // Only show links that exist
 
   const navLinks = [
     { to: "/products", label: "Shop All" },
@@ -34,18 +37,19 @@ const Footer = () => {
           {/* Brand */}
           <div className="lg:col-span-1 space-y-6">
             <Link to="/" className="text-3xl font-serif tracking-wide hover:opacity-80 transition-opacity">
-              ATELIER
+              {settings?.store_name?.toUpperCase() || 'ATELIER'}
             </Link>
             <p className="text-warm-grey text-sm leading-relaxed max-w-xs">
-              Crafting timeless pieces that transcend seasons. Our commitment to quality
-              and understated elegance defines every garment we create.
+              {settings?.seo_description || "Crafting timeless pieces that transcend seasons. Our commitment to quality and understated elegance defines every garment we create."}
             </p>
             {/* Social Links */}
             <div className="flex gap-4 pt-2">
               {socialLinks.map(({ icon: Icon, href, label }) => (
                 <a
                   key={label}
-                  href={href}
+                  href={href!}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   aria-label={label}
                   className="p-2 rounded-full border border-warm-grey/30 text-warm-grey hover:text-cream hover:border-cream hover:scale-110 transition-all duration-300"
                 >
@@ -89,9 +93,11 @@ const Footer = () => {
 
           {/* Newsletter */}
           <div className="space-y-6">
-            <h4 className="text-xs tracking-[0.2em] uppercase font-medium">Newsletter</h4>
+            <h4 className="text-xs tracking-[0.2em] uppercase font-medium">
+              {settings?.footer_newsletter_title || 'Newsletter'}
+            </h4>
             <p className="text-warm-grey text-sm leading-relaxed">
-              Subscribe to receive updates, access to exclusive deals, and more.
+              {settings?.footer_newsletter_text || "Subscribe to receive updates, access to exclusive deals, and more."}
             </p>
             <form className="flex flex-col gap-3">
               <input
@@ -113,7 +119,7 @@ const Footer = () => {
         <div className="mt-16 pt-8 border-t border-warm-grey/20">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <p className="text-sm text-warm-grey">
-              © {currentYear} Atelier. All rights reserved.
+              {settings?.footer_copyright_text || `© ${currentYear} ${settings?.store_name || 'Atelier'}. All rights reserved.`}
             </p>
             <div className="flex gap-6 text-sm text-warm-grey">
               <span className="hover:text-cream transition-colors duration-300 cursor-pointer">

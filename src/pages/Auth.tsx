@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useAuth } from '@/hooks/useAuth';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,6 +23,7 @@ const Auth = () => {
   const [submitting, setSubmitting] = useState(false);
 
   const { user, signIn, signUp } = useAuth();
+  const { settings } = useSiteSettings();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -81,7 +83,7 @@ const Auth = () => {
     <div className="min-h-screen bg-background flex items-center justify-center px-6">
       <div className="w-full max-w-md">
         <div className="text-center mb-12">
-          <h1 className="text-3xl font-serif tracking-wide text-foreground">ATELIER</h1>
+          <h1 className="text-3xl font-serif tracking-wide text-foreground">{settings?.store_name?.toUpperCase() || 'ATELIER'}</h1>
           <p className="text-muted-foreground mt-2 text-sm tracking-wide">
             {isLogin ? 'Welcome back' : 'Create your account'}
           </p>

@@ -10,15 +10,51 @@ import {
     CollapsibleContent,
     CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { ArrowLeft, ChevronUp, Download, Upload, Palette, Store, Image, Phone, Globe, Save } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowLeft, ChevronUp, Download, Upload, Palette, Store, Image, Phone, Globe, Save, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { LogoUploader } from '@/components/admin/shop/LogoUploader';
+import { FaviconUploader } from '@/components/admin/shop/FaviconUploader';
 
 const ShopSettings = () => {
     const [storeInfoOpen, setStoreInfoOpen] = useState(true);
     const [contactInfoOpen, setContactInfoOpen] = useState(true);
     const [socialLinksOpen, setSocialLinksOpen] = useState(true);
     const [settingsOpen, setSettingsOpen] = useState(true);
-    const [themeColor, setThemeColor] = useState('#6366f1');
+
+    // Fetch settings
+    const { settings, isLoading, updateSettings, isUpdating } = useSiteSettings();
+
+    // Form state
+    const { register, handleSubmit, reset, watch, setValue } = useForm({
+        defaultValues: settings,
+    });
+
+    // Update form when settings load
+    useEffect(() => {
+        if (settings) {
+            reset(settings);
+        }
+    }, [settings, reset]);
+
+    // Watch theme color for live preview
+    const themeColor = watch('theme_color') || '#6366f1';
+
+    // Form submit handler
+    const onSubmit = (data: any) => {
+        updateSettings(data);
+    };
+
+    if (isLoading) {
+        return (
+            <AdminLayout>
+                <div className="flex items-center justify-center h-64">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+            </AdminLayout>
+        );
+    }
 
     return (
         <AdminLayout>
@@ -37,9 +73,12 @@ const ShopSettings = () => {
                             <p className="text-muted-foreground text-sm">Configure your store for Bangladesh market</p>
                         </div>
                     </div>
-                    <Button>
-                        <Save className="h-4 w-4 mr-2" />
-                        Save Settings
+                    <Button onClick={handleSubmit(onSubmit)} disabled={isUpdating}>
+                        {isUpdating ? (
+                            <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Saving...</>
+                        ) : (
+                            <><Save className="h-4 w-4 mr-2" />Save Settings</>
+                        )}
                     </Button>
                 </div>
 
@@ -64,38 +103,38 @@ const ShopSettings = () => {
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="space-y-2">
                                                 <Label htmlFor="storeName">Store Name</Label>
-                                                <Input id="storeName" placeholder="Wear & Tee" />
+                                                <Input id="storeName" placeholder="Wear & Tee" {...register('store_name')} />
                                             </div>
                                             <div className="space-y-2">
                                                 <Label htmlFor="siteTitle">Site Title (SEO)</Label>
-                                                <Input id="siteTitle" placeholder="Wear & Tee - Premium Fashion" />
+                                                <Input id="siteTitle" placeholder="Wear & Tee - Premium Fashion" {...register('site_title')} />
                                             </div>
                                         </div>
 
                                         <div className="space-y-2">
                                             <Label htmlFor="storeAddress">Store Address</Label>
-                                            <Textarea id="storeAddress" placeholder="Shinepukur Road, Mirpur 1" rows={2} />
+                                            <Textarea id="storeAddress" placeholder="Shinepukur Road, Mirpur 1" rows={2} {...register('store_address')} />
                                         </div>
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="space-y-2">
                                                 <Label htmlFor="businessHours">Business Hours</Label>
-                                                <Input id="businessHours" placeholder="Sat-Thu: 10AM-8PM" />
+                                                <Input id="businessHours" placeholder="Sat-Thu: 10AM-8PM" {...register('business_hours')} />
                                             </div>
                                             <div className="space-y-2">
                                                 <Label htmlFor="currency">Currency Symbol</Label>
-                                                <Input id="currency" placeholder="৳" className="max-w-24" />
+                                                <Input id="currency" placeholder="৳" className="max-w-24" {...register('currency_symbol')} />
                                             </div>
                                         </div>
 
                                         <div className="space-y-2">
                                             <Label htmlFor="seoDetails">Shop Details (SEO & Data Feed)</Label>
-                                            <Textarea id="seoDetails" placeholder="Enter shop description for SEO" rows={3} />
+                                            <Textarea id="seoDetails" placeholder="Enter shop description for SEO" rows={3} {...register('seo_description')} />
                                         </div>
 
                                         <div className="space-y-2">
                                             <Label htmlFor="announcement">Topbar Announcement Message</Label>
-                                            <Textarea id="announcement" placeholder="e.g., Free shipping on orders over ৳1000!" rows={2} />
+                                            <Textarea id="announcement" placeholder="e.g., Free shipping on orders over ৳1000!" rows={2} {...register('announcement_message')} />
                                         </div>
                                     </div>
                                 </CollapsibleContent>
@@ -120,17 +159,17 @@ const ShopSettings = () => {
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="space-y-2">
                                                 <Label htmlFor="shopEmail">Shop Email</Label>
-                                                <Input id="shopEmail" type="email" placeholder="shop@example.com" />
+                                                <Input id="shopEmail" type="email" placeholder="shop@example.com" {...register('shop_email')} />
                                             </div>
                                             <div className="space-y-2">
                                                 <Label htmlFor="phone">Phone Number</Label>
-                                                <Input id="phone" placeholder="01621225454" />
+                                                <Input id="phone" placeholder="01621225454" {...register('phone_number')} />
                                             </div>
                                         </div>
 
                                         <div className="space-y-2">
                                             <Label htmlFor="whatsapp">WhatsApp Number</Label>
-                                            <Input id="whatsapp" placeholder="8801621225454" />
+                                            <Input id="whatsapp" placeholder="8801621225454" {...register('whatsapp_number')} />
                                             <p className="text-xs text-muted-foreground">Include country code (880) for WhatsApp integration</p>
                                         </div>
                                     </div>
@@ -156,21 +195,21 @@ const ShopSettings = () => {
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="space-y-2">
                                                 <Label htmlFor="facebook">Facebook Page URL</Label>
-                                                <Input id="facebook" placeholder="https://facebook.com/yourpage" />
+                                                <Input id="facebook" placeholder="https://facebook.com/yourpage" {...register('facebook_url')} />
                                             </div>
                                             <div className="space-y-2">
                                                 <Label htmlFor="instagram">Instagram URL</Label>
-                                                <Input id="instagram" placeholder="https://instagram.com/yourpage" />
+                                                <Input id="instagram" placeholder="https://instagram.com/yourpage" {...register('instagram_url')} />
                                             </div>
                                         </div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="space-y-2">
                                                 <Label htmlFor="youtube">YouTube URL</Label>
-                                                <Input id="youtube" placeholder="https://youtube.com/@yourchannel" />
+                                                <Input id="youtube" placeholder="https://youtube.com/@yourchannel" {...register('youtube_url')} />
                                             </div>
                                             <div className="space-y-2">
                                                 <Label htmlFor="tiktok">TikTok URL</Label>
-                                                <Input id="tiktok" placeholder="https://tiktok.com/@yourpage" />
+                                                <Input id="tiktok" placeholder="https://tiktok.com/@yourpage" {...register('tiktok_url')} />
                                             </div>
                                         </div>
                                     </div>
@@ -209,7 +248,10 @@ const ShopSettings = () => {
                                                         Products with zero stock will be marked as "Out of Stock"
                                                     </p>
                                                 </div>
-                                                <Switch />
+                                                <Switch
+                                                    checked={watch('maintain_stock')}
+                                                    onCheckedChange={(checked) => setValue('maintain_stock', checked)}
+                                                />
                                             </div>
 
                                             <div className="flex items-center justify-between py-2 border-b border-border">
@@ -219,7 +261,10 @@ const ShopSettings = () => {
                                                         Display how many times a product has been sold
                                                     </p>
                                                 </div>
-                                                <Switch defaultChecked />
+                                                <Switch
+                                                    checked={watch('show_sold_count')}
+                                                    onCheckedChange={(checked) => setValue('show_sold_count', checked)}
+                                                />
                                             </div>
 
                                             <div className="flex items-center justify-between py-2 border-b border-border">
@@ -231,7 +276,10 @@ const ShopSettings = () => {
                                                 </div>
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-xs text-muted-foreground">[YES]</span>
-                                                    <Switch defaultChecked />
+                                                    <Switch
+                                                        checked={watch('allow_image_downloads')}
+                                                        onCheckedChange={(checked) => setValue('allow_image_downloads', checked)}
+                                                    />
                                                 </div>
                                             </div>
 
@@ -244,7 +292,10 @@ const ShopSettings = () => {
                                                 </div>
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-xs text-muted-foreground">[NO]</span>
-                                                    <Switch />
+                                                    <Switch
+                                                        checked={watch('show_email_field')}
+                                                        onCheckedChange={(checked) => setValue('show_email_field', checked)}
+                                                    />
                                                 </div>
                                             </div>
 
@@ -257,7 +308,10 @@ const ShopSettings = () => {
                                                 </div>
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-xs text-muted-foreground">[YES]</span>
-                                                    <Switch defaultChecked />
+                                                    <Switch
+                                                        checked={watch('enable_promo_codes')}
+                                                        onCheckedChange={(checked) => setValue('enable_promo_codes', checked)}
+                                                    />
                                                 </div>
                                             </div>
                                         </div>
@@ -265,7 +319,7 @@ const ShopSettings = () => {
                                         {/* VAT / Tax */}
                                         <div className="space-y-2 pt-2">
                                             <Label htmlFor="vat">VAT / Tax Percentage</Label>
-                                            <Input id="vat" type="number" defaultValue="0" className="max-w-32" />
+                                            <Input id="vat" type="number" className="max-w-32" {...register('vat_percentage')} />
                                         </div>
                                     </div>
                                 </CollapsibleContent>
@@ -275,26 +329,6 @@ const ShopSettings = () => {
 
                     {/* Right Column - Sidebar Cards */}
                     <div className="space-y-6">
-                        {/* Media & Assets */}
-                        <div className="bg-card border border-border rounded-xl p-5">
-                            <div className="flex items-center gap-2 mb-4">
-                                <Image className="h-5 w-5 text-muted-foreground" />
-                                <div>
-                                    <h3 className="font-medium">Media & Assets</h3>
-                                    <p className="text-xs text-muted-foreground">Logo and Favicon URLs</p>
-                                </div>
-                            </div>
-                            <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="logoUrl">Logo URL</Label>
-                                    <Input id="logoUrl" placeholder="https://example.com/logo.png" />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="faviconUrl">Favicon URL</Label>
-                                    <Input id="faviconUrl" placeholder="https://example.com/favicon.ico" />
-                                </div>
-                            </div>
-                        </div>
 
                         {/* Shop QR */}
                         <div className="bg-card border border-border rounded-xl p-5">
@@ -322,25 +356,19 @@ const ShopSettings = () => {
                         {/* Shop Logo Upload */}
                         <div className="bg-card border border-border rounded-xl p-5">
                             <h3 className="font-medium mb-4">Shop Logo</h3>
-                            <div className="aspect-video bg-muted rounded-lg flex items-center justify-center mb-3 border-2 border-dashed border-border">
-                                <span className="text-sm text-muted-foreground">Shop Logo</span>
-                            </div>
-                            <Button variant="outline" className="w-full border-accent text-accent hover:bg-accent hover:text-white">
-                                <Upload className="h-4 w-4 mr-2" />
-                                Upload Shop Logo
-                            </Button>
+                            <LogoUploader
+                                currentUrl={watch('logo_url')}
+                                onUploadComplete={(url) => setValue('logo_url', url)}
+                            />
                         </div>
 
                         {/* Shop Favicon Upload */}
                         <div className="bg-card border border-border rounded-xl p-5">
                             <h3 className="font-medium mb-4">Shop Favicon</h3>
-                            <div className="h-20 w-20 mx-auto bg-muted rounded-lg flex items-center justify-center mb-3 border-2 border-dashed border-border">
-                                <span className="text-xs text-muted-foreground">Favicon</span>
-                            </div>
-                            <Button variant="outline" className="w-full border-accent text-accent hover:bg-accent hover:text-white">
-                                <Upload className="h-4 w-4 mr-2" />
-                                Upload Shop Favicon
-                            </Button>
+                            <FaviconUploader
+                                currentUrl={watch('favicon_url')}
+                                onUploadComplete={(url) => setValue('favicon_url', url)}
+                            />
                         </div>
 
                         {/* Shop Theme */}
@@ -363,7 +391,7 @@ const ShopSettings = () => {
                                     }}
                                     min="0"
                                     max="360"
-                                    onChange={(e) => setThemeColor(`hsl(${e.target.value}, 70%, 60%)`)}
+                                    onChange={(e) => setValue('theme_color', `hsl(${e.target.value}, 70%, 60%)`)}
                                 />
                             </div>
                             <Button className="w-full bg-accent hover:bg-accent/90 mb-2">

@@ -244,6 +244,7 @@ const ProductEditor = () => {
                                             <ProductMedia
                                                 images={field.value}
                                                 onChange={field.onChange}
+                                                colors={form.watch('colors')}
                                             />
                                         )}
                                     />

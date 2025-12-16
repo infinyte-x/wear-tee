@@ -5,6 +5,9 @@ import { AuthProvider } from "@/hooks/useAuth"
 import { Toaster } from "@/components/ui/toaster"
 import { Toaster as Sonner } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { DocumentHead } from "@/components/DocumentHead"
+import { AnnouncementBar } from "@/components/AnnouncementBar"
+import { CustomStylesInjector } from "@/components/CustomStylesInjector"
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen'
@@ -31,6 +34,9 @@ if (!rootElement.innerHTML) {
         <QueryClientProvider client={queryClient}>
             <AuthProvider>
                 <TooltipProvider>
+                    <DocumentHead />
+                    <CustomStylesInjector />
+                    <AnnouncementBar />
                     <Toaster />
                     <Sonner />
                     <RouterProvider router={router} />

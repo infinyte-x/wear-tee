@@ -83,8 +83,35 @@ const AdminOrders = () => {
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
-      const { error } = await supabase.from('orders').update({ status }).eq('id', orderId);
-      if (error) throw error;
+      // First, get the current status for the history record
+      const { data: currentOrder } = await supabase
+        .from('orders')
+        .select('status')
+        .eq('id', orderId)
+        .single();
+
+      const previousStatus = currentOrder?.status;
+
+      // Update the order status
+      const { error: updateError } = await supabase
+        .from('orders')
+        .update({ status })
+        .eq('id', orderId);
+      if (updateError) throw updateError;
+
+      // Log the status change to history (audit trail)
+      const { error: historyError } = await supabase
+        .from('order_status_history')
+        .insert({
+          order_id: orderId,
+          previous_status: previousStatus,
+          new_status: status,
+        });
+
+      // Don't fail the main operation if history logging fails
+      if (historyError) {
+        console.error('Failed to log status history:', historyError);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
@@ -228,17 +255,17 @@ const AdminOrders = () => {
         <div className="bg-card border border-border/50 rounded-xl overflow-hidden shadow-sm overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-primary text-primary-foreground hover:bg-primary">
-                <TableHead className="font-semibold text-primary-foreground w-16">Order ID</TableHead>
-                <TableHead className="font-semibold text-primary-foreground">Customer</TableHead>
-                <TableHead className="font-semibold text-primary-foreground">Phone</TableHead>
-                <TableHead className="font-semibold text-primary-foreground max-w-[200px]">Product</TableHead>
-                <TableHead className="font-semibold text-primary-foreground text-center">Quantity</TableHead>
-                <TableHead className="font-semibold text-primary-foreground">Delivery Area</TableHead>
-                <TableHead className="font-semibold text-primary-foreground">Amount</TableHead>
-                <TableHead className="font-semibold text-primary-foreground text-center">Status</TableHead>
-                <TableHead className="font-semibold text-primary-foreground">Date</TableHead>
-                <TableHead className="font-semibold text-primary-foreground text-center">Actions</TableHead>
+              <TableRow className="bg-muted/30 hover:bg-muted/30">
+                <TableHead className="font-semibold w-16">Order ID</TableHead>
+                <TableHead className="font-semibold">Customer</TableHead>
+                <TableHead className="font-semibold">Phone</TableHead>
+                <TableHead className="font-semibold max-w-[200px]">Product</TableHead>
+                <TableHead className="font-semibold text-center">Quantity</TableHead>
+                <TableHead className="font-semibold">Delivery Area</TableHead>
+                <TableHead className="font-semibold">Amount</TableHead>
+                <TableHead className="font-semibold text-center">Status</TableHead>
+                <TableHead className="font-semibold">Date</TableHead>
+                <TableHead className="font-semibold text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

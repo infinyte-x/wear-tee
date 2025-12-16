@@ -6,30 +6,25 @@ import {
   Users,
   Settings,
   LogOut,
-  Store,
   ChevronDown,
-  Tags,
   Layers,
   PanelLeftClose,
   PanelLeft,
   X,
-  Cog,
   BarChart3,
-  Smartphone,
   Palette,
   FileText,
-  Ticket,
-  UserCog,
   Building2,
-  Globe,
-  CreditCard,
-  MessageSquare,
-  Share2,
+  DollarSign,
   Truck,
-  Search as SearchIcon,
-  TrendingUp
+  UndoDot,
+  Boxes,
+  Tag,
+  FolderOpen,
+  Edit3
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { Button } from '@/components/ui/button';
 import {
   Collapsible,
@@ -59,13 +54,15 @@ const AdminSidebar = ({
   isMobile = false
 }: AdminSidebarProps) => {
   const { signOut } = useAuth();
+  const { settings } = useSiteSettings();
   const routerState = useRouterState();
   const pathname = routerState.location.pathname;
 
   // --- State for collapsible sections ---
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    configuration: false,
-    reports: false,
+    sales: false,
+    catalog: false,
+    siteContents: false,
   });
 
   const toggleSection = (section: string) => {
@@ -75,13 +72,22 @@ const AdminSidebar = ({
   // --- Auto-open based on active route ---
   useEffect(() => {
     const newOpenState = { ...openSections };
-    if (pathname.includes('/admin/manage-shop') || pathname.includes('/admin/theme') ||
-      pathname.includes('/admin/landing-pages') || pathname.includes('/admin/promo-codes') ||
-      pathname.includes('/admin/users-permissions') || pathname.includes('/admin/mobile-app')) {
-      newOpenState.configuration = true;
+
+    // Sales section
+    if (pathname.includes('/admin/orders') || pathname.includes('/admin/transactions') ||
+      pathname.includes('/admin/shipments') || pathname.includes('/admin/returns')) {
+      newOpenState.sales = true;
     }
-    if (pathname.includes('/admin/analytics') || pathname.includes('/admin/reports')) {
-      newOpenState.reports = true;
+
+    // Catalog section
+    if (pathname.includes('/admin/products') || pathname.includes('/admin/categories') ||
+      pathname.includes('/admin/attributes')) {
+      newOpenState.catalog = true;
+    }
+
+    // Site Contents section
+    if (pathname.includes('/admin/collections') || pathname.includes('/admin/pages')) {
+      newOpenState.siteContents = true;
     }
 
     setOpenSections(prev => ({ ...prev, ...newOpenState }));
@@ -215,7 +221,7 @@ const AdminSidebar = ({
             isOpen ? "rotate-0" : "-rotate-90"
           )} />
         </CollapsibleTrigger>
-        <CollapsibleContent className="pl-4 space-y-1 border-l-2 border-white/10 ml-6 animate-in slide-in-from-top-2 duration-200">
+        <CollapsibleContent className="pl-4 space-y-1 animate-in slide-in-from-top-2 duration-200">
           {children}
         </CollapsibleContent>
       </Collapsible>
@@ -230,8 +236,14 @@ const AdminSidebar = ({
         collapsed && !isMobile ? "w-16" : "w-64"
       )}>
         {/* Header */}
-        <div className="p-4 lg:p-5 sticky top-0 bg-sidebar/95 z-10 backdrop-blur-sm border-b border-white/5">
-          <div className="flex items-center justify-between">
+        <div className={cn(
+          "p-4 lg:p-5 sticky top-0 bg-sidebar/95 z-10 backdrop-blur-sm border-b border-white/5",
+          collapsed && !isMobile && "flex flex-col items-center"
+        )}>
+          <div className={cn(
+            "flex items-center justify-between",
+            collapsed && !isMobile && "justify-center"
+          )}>
             <Link
               to="/"
               onClick={handleNavClick}
@@ -241,9 +253,9 @@ const AdminSidebar = ({
               )}
             >
               <div className="p-2 bg-accent/20 rounded-lg group-hover:bg-accent/30 transition-colors duration-300">
-                <Store className="h-5 w-5 text-accent" />
+                <Building2 className="h-5 w-5 text-accent" />
               </div>
-              {(!collapsed || isMobile) && <span className="text-white">BrandLaunch</span>}
+              {(!collapsed || isMobile) && <span className="text-white">{settings?.store_name || 'BrandLaunch'}</span>}
             </Link>
 
             {/* Mobile close button */}
@@ -268,64 +280,55 @@ const AdminSidebar = ({
 
         {/* Collapse Toggle - Desktop only */}
         <div className="px-3 mb-2 hidden lg:block">
-          <Button
-            variant="ghost"
-            size="sm"
+          <button
             onClick={onToggleCollapse}
             className={cn(
-              "w-full text-white/60 hover:text-white hover:bg-white/10 transition-all duration-300",
-              collapsed ? "justify-center" : "justify-start"
+              "relative flex items-center gap-3 px-4 py-2.5 text-sm transition-all duration-300 rounded-lg group w-full",
+              "text-white/60 hover:bg-white/5 hover:text-white",
+              collapsed && "justify-center px-2"
             )}
           >
             {collapsed ? (
-              <PanelLeft className="h-4 w-4" />
+              <PanelLeft className="h-4 w-4 group-hover:scale-110 group-hover:text-accent/70 transition-all duration-300" />
             ) : (
               <>
-                <PanelLeftClose className="h-4 w-4 mr-2" />
-                <span className="text-xs">Collapse</span>
+                <PanelLeftClose className="h-4 w-4 group-hover:scale-110 group-hover:text-accent/70 transition-all duration-300" />
+                <span className="font-medium">Collapse</span>
               </>
             )}
-          </Button>
+          </button>
         </div>
 
         <nav className="flex-1 py-4 px-3 space-y-1">
-          {/* Main Navigation - Zatiq Style */}
+          {/* Dashboard */}
           <NavLink to="/admin" icon={LayoutDashboard} exact>Dashboard</NavLink>
-          <NavLink to="/admin/orders" icon={ShoppingCart}>Orders</NavLink>
-          <NavLink to="/admin/products" icon={Package}>Products</NavLink>
-          <NavLink to="/admin/categories" icon={Layers}>Categories</NavLink>
+
+          {/* Sales Section */}
+          <NavSection id="sales" label="Sales" icon={DollarSign}>
+            <NavLink to="/admin/orders" icon={ShoppingCart}>Orders</NavLink>
+            <NavLink to="/admin/transactions" icon={DollarSign}>Transactions</NavLink>
+            <NavLink to="/admin/shipments" icon={Truck}>Shipments</NavLink>
+            <NavLink to="/admin/returns" icon={UndoDot}>Returns</NavLink>
+          </NavSection>
+
+          {/* Catalog Section */}
+          <NavSection id="catalog" label="Catalog" icon={Package}>
+            <NavLink to="/admin/products" icon={Package}>Products</NavLink>
+            <NavLink to="/admin/categories" icon={Layers}>Categories</NavLink>
+            <NavLink to="/admin/attributes" icon={Tag}>Attributes</NavLink>
+          </NavSection>
+
+          {/* Site Contents Section */}
+          <NavSection id="siteContents" label="Site Contents" icon={FolderOpen}>
+            <NavLink to="/admin/collections" icon={Boxes}>Collections</NavLink>
+            <NavLink to="/admin/pages" icon={Edit3}>Page Customize</NavLink>
+          </NavSection>
+
+          {/* Standalone Links */}
+          <NavLink to="/admin/theme" icon={Palette}>Customizations</NavLink>
           <NavLink to="/admin/customers" icon={Users}>Customers</NavLink>
-
-          {/* Divider */}
-          {(!collapsed || isMobile) && (
-            <div className="pt-4 pb-2">
-              <div className="text-[10px] text-white/40 uppercase tracking-wider font-medium px-4">Configuration</div>
-            </div>
-          )}
-
-          {/* Configuration Section */}
-          <NavSection id="configuration" label="Configuration" icon={Cog}>
-            <NavLink to="/admin/manage-shop" icon={Building2}>Manage Shop</NavLink>
-            <NavLink to="/admin/mobile-app" icon={Smartphone}>Mobile App Request</NavLink>
-            <NavLink to="/admin/theme" icon={Palette}>Customize Theme</NavLink>
-            <NavLink to="/admin/landing-pages" icon={FileText}>Landing Pages</NavLink>
-            <NavLink to="/admin/promo-codes" icon={Ticket}>Promo Codes</NavLink>
-            <NavLink to="/admin/users-permissions" icon={UserCog}>Users & Permissions</NavLink>
-          </NavSection>
-
-          {/* Reports Section */}
-          {(!collapsed || isMobile) && (
-            <div className="pt-4 pb-2">
-              <div className="text-[10px] text-white/40 uppercase tracking-wider font-medium px-4">Reports</div>
-            </div>
-          )}
-
-          <NavSection id="reports" label="Reports" icon={BarChart3}>
-            <NavLink to="/admin/analytics" icon={TrendingUp}>Analytics</NavLink>
-          </NavSection>
-
-          {/* Settings - Direct Link */}
-          <NavLink to="/admin/settings" icon={Settings} className="mt-4">Settings</NavLink>
+          <NavLink to="/admin/manage-shop" icon={Building2}>Manage Shop</NavLink>
+          <NavLink to="/admin/reports" icon={BarChart3}>Reports</NavLink>
 
         </nav>
 

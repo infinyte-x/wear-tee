@@ -1,10 +1,12 @@
-import { ShoppingBag, Menu, X, Search, User, Shield, LogOut } from "lucide-react";
+import { ShoppingBag, Menu, X, Search, User, Shield, LogOut, Heart } from "lucide-react";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { cn } from "@/lib/utils";
+import { SearchDialog } from "@/components/SearchDialog";
 
 interface NavbarProps {
   cartCount?: number;
@@ -13,10 +15,25 @@ interface NavbarProps {
 const Navbar = ({ cartCount = 0 }: NavbarProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isAdmin, signOut } = useAuth();
+  const { settings } = useSiteSettings();
   const isHome = location.pathname === "/";
+
+  // Keyboard shortcut: Ctrl+K or Cmd+K to open search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -39,10 +56,7 @@ const Navbar = ({ cartCount = 0 }: NavbarProps) => {
       : "bg-transparent"
   );
 
-  const textClasses = cn(
-    "transition-colors duration-300",
-    isHome && !scrolled ? "text-cream" : "text-foreground"
-  );
+  const textClasses = "text-foreground transition-colors duration-300";
 
   const handleSignOut = async () => {
     await signOut();
@@ -68,7 +82,7 @@ const Navbar = ({ cartCount = 0 }: NavbarProps) => {
               textClasses
             )}
           >
-            ATELIER
+            {settings?.store_name?.toUpperCase() || 'ATELIER'}
           </Link>
 
           {/* Desktop Navigation */}
@@ -95,6 +109,7 @@ const Navbar = ({ cartCount = 0 }: NavbarProps) => {
             <Button
               variant="ghost"
               size="icon"
+              onClick={() => setSearchOpen(true)}
               className={cn(
                 "hover:bg-transparent hover:scale-110 transition-all duration-300",
                 textClasses
@@ -150,6 +165,19 @@ const Navbar = ({ cartCount = 0 }: NavbarProps) => {
                 </Button>
               </Link>
             )}
+
+            <Link to="/wishlist">
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  "hover:bg-transparent hover:scale-110 transition-all duration-300",
+                  textClasses
+                )}
+              >
+                <Heart className="h-5 w-5" />
+              </Button>
+            </Link>
 
             <Link to="/cart">
               <Button
@@ -229,6 +257,9 @@ const Navbar = ({ cartCount = 0 }: NavbarProps) => {
           </div>
         </div>
       </nav>
+
+      {/* Search Dialog */}
+      <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
     </header>
   );
 };
