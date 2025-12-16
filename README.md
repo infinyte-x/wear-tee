@@ -1,73 +1,31 @@
-# Welcome to your Lovable project
+## Running the Project with Docker
 
-## Project info
+This project provides a Docker setup for streamlined local development and deployment. The included `Dockerfile` and `docker-compose.yml` are tailored for this TypeScript/Node.js application.
 
-**URL**: https://lovable.dev/projects/8d5caa71-049f-40e7-b66a-b708a08d565a
+### Requirements
+- **Node.js version:** 22.13.1 (as specified in the Dockerfile)
+- **Exposed port:** `3000` (the application runs on this port)
+- **Environment variables:** If your project requires environment variables, ensure you have a `.env` file in the project root. Uncomment the `env_file` line in `docker-compose.yml` to enable this.
 
-## How can I edit this code?
+### Build and Run Instructions
+1. **Build and start the app:**
+   ```sh
+   docker compose up --build
+   ```
+   This will build the Docker image and start the container using the configuration in `docker-compose.yml`.
 
-There are several ways of editing your application.
+2. **Access the app:**
+   - The application will be available at [http://localhost:3000](http://localhost:3000).
 
-**Use Lovable**
+### Configuration Notes
+- The Docker setup uses a multi-stage build to optimize the final image size and security.
+- The app runs as a non-root user (`appuser`) for improved security.
+- If you need to provide environment variables, create a `.env` file in the project root and uncomment the `env_file` line in `docker-compose.yml`.
+- No external services (e.g., databases) are configured by default. If your app requires additional services, add them to `docker-compose.yml` under `services` and update `depends_on` as needed.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/8d5caa71-049f-40e7-b66a-b708a08d565a) and start prompting.
+### Ports
+- **3000:** Main application port exposed by the container and mapped to the host.
 
-Changes made via Lovable will be committed automatically to this repo.
+---
 
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/8d5caa71-049f-40e7-b66a-b708a08d565a) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+*For further customization or troubleshooting, refer to the comments in the provided Dockerfile and docker-compose.yml.*

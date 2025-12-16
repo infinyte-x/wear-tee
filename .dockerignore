@@ -1,0 +1,83 @@
+# Node.js dependencies
+node_modules/
+npm-debug.log
+yarn-debug.log
+
+# Build outputs
+build/
+dist/
+out/
+
+# Temporary and cache files
+.tmp/
+tmp/
+temp/
+.tanstack/tmp/
+*.tmp
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Version control
+.git/
+.gitignore
+.svn/
+.hg/
+
+# Environment and secrets
+.env*
+*.env
+*.pem
+*.key
+*.crt
+
+# Local configuration
+config.local.*
+*.local.yml
+.local/
+local/
+
+# Documentation
+README*
+*.md
+docs/
+
+# Test and debug artifacts
+test/
+tests/
+debug/
+*.log
+
+# Supabase temp files
+supabase/.temp/
+
+# Miscellaneous
+*.tsbuildinfo
+build_log.txt
+bun.lockb
+
+# Ignore Docker files themselves
+Dockerfile*
+docker-compose*
+
+# Exclude coverage and Python cache (for completeness)
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.coverage
+
+# Go cache and test files (for completeness)
+/go-cache/
+*.test
+
+# Java build artifacts (for completeness)
+target/
+*.class
+.gradle/
+
+# Do not ignore lock files or .mvnw/.gradlew files as per instructions
+# End of .dockerignore
