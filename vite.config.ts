@@ -25,18 +25,15 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // React core + TanStack bundled together to prevent loading order issues
-          // TanStack libraries depend on React and need it available at initialization
+          // React core + React-dependent libraries bundled together
+          // to prevent loading order issues (forwardRef, Component, etc.)
           if (
             id.includes('node_modules/react-dom') ||
             id.includes('node_modules/react/') ||
-            id.includes('@tanstack')
+            id.includes('@tanstack') ||
+            id.includes('@radix-ui')
           ) {
             return 'vendor-react-core';
-          }
-          // Radix UI
-          if (id.includes('@radix-ui')) {
-            return 'vendor-radix';
           }
           // Recharts
           if (id.includes('recharts') || id.includes('d3-')) {
