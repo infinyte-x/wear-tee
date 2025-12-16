@@ -19,7 +19,7 @@ interface PathaoTokenResponse {
     expires_in: number;
 }
 
-serve(async (req) => {
+serve(async (req: Request) => {
     // Handle CORS preflight
     if (req.method === "OPTIONS") {
         return new Response("ok", { headers: corsHeaders });
@@ -33,7 +33,7 @@ serve(async (req) => {
 
         const { action, ...params } = await req.json();
 
-        // Get stored credentials
+        // Get stored credentials (may be null if not configured yet)
         const { data: credentials } = await supabase
             .from("courier_integrations")
             .select("*")
@@ -109,6 +109,33 @@ serve(async (req) => {
             );
         }
 
+        // Check connection status - doesn't require credentials to exist
+        if (action === "check-connection") {
+            return new Response(
+                JSON.stringify({ connected: credentials?.is_active ?? false }),
+                { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+        }
+
+        // Disconnect - works even if no credentials
+        if (action === "disconnect") {
+            if (credentials) {
+                await supabase
+                    .from("courier_integrations")
+                    .update({
+                        is_active: false,
+                        access_token: null,
+                        refresh_token: null,
+                        token_expires_at: null,
+                    })
+                    .eq("courier_name", "pathao");
+            }
+            return new Response(
+                JSON.stringify({ success: true }),
+                { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+        }
+
         // For all other actions, we need stored credentials
         if (!credentials?.client_id || !credentials?.client_secret) {
             return new Response(
@@ -162,7 +189,7 @@ serve(async (req) => {
         // Handle different API actions
         let endpoint = "";
         let method = "GET";
-        let body = undefined;
+        let body: string | undefined = undefined;
 
         switch (action) {
             case "get-cities":
@@ -200,25 +227,6 @@ serve(async (req) => {
                 method = "POST";
                 body = JSON.stringify({ phone: params.phone });
                 break;
-            case "check-connection":
-                return new Response(
-                    JSON.stringify({ connected: credentials.is_active }),
-                    { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-                );
-            case "disconnect":
-                await supabase
-                    .from("courier_integrations")
-                    .update({
-                        is_active: false,
-                        access_token: null,
-                        refresh_token: null,
-                        token_expires_at: null,
-                    })
-                    .eq("courier_name", "pathao");
-                return new Response(
-                    JSON.stringify({ success: true }),
-                    { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-                );
             default:
                 return new Response(
                     JSON.stringify({ error: `Unknown action: ${action}` }),
@@ -246,9 +254,10 @@ serve(async (req) => {
                 headers: { ...corsHeaders, "Content-Type": "application/json" }
             }
         );
-    } catch (error) {
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "Unknown error";
         return new Response(
-            JSON.stringify({ error: error.message }),
+            JSON.stringify({ error: message }),
             { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
     }
