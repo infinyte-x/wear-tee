@@ -14,25 +14,71 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash2, FileText } from "lucide-react";
+import { Plus, Edit, Trash2, FileText, LayoutGrid } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+
+type PageItem = {
+    id: string;
+    title: string;
+    slug: string;
+    status: string;
+    updated_at: string | null;
+    is_home?: boolean;
+    type: 'page' | 'collection';
+}
 
 export default function AdminPages() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
 
     const { data: pages, isLoading } = useQuery({
-        queryKey: ["admin_pages"],
+        queryKey: ["admin_pages_combined"],
         queryFn: async () => {
-            const { data, error } = await supabase
+            const pagesPromise = supabase
                 .from("pages")
                 .select("*")
-                .order("is_home", { ascending: false }) // Home first
-                .order("created_at", { ascending: false }); // Then newest
+                .order("is_home", { ascending: false })
+                .order("created_at", { ascending: false });
 
-            if (error) throw error;
-            return data;
+            const categoriesPromise = supabase
+                .from("categories")
+                .select("*")
+                .order("created_at", { ascending: false });
+
+            const [pagesRes, catsRes] = await Promise.all([pagesPromise, categoriesPromise]);
+
+            if (pagesRes.error) throw pagesRes.error;
+            if (catsRes.error) throw catsRes.error;
+
+            const pagesData = (pagesRes.data || []).map(p => ({
+                id: p.id,
+                title: p.title,
+                slug: p.slug,
+                status: p.status,
+                updated_at: p.updated_at,
+                is_home: p.is_home,
+                type: 'page' as const
+            }));
+
+            const categoriesData = (catsRes.data || []).map(c => ({
+                id: c.id,
+                title: c.name,
+                slug: `collections/${c.slug}`,
+                status: c.is_active ? 'published' : 'draft',
+                updated_at: c.updated_at || c.created_at || null,
+                is_home: false,
+                type: 'collection' as const
+            }));
+
+            // Sort: Home page first, then by updated_at desc
+            return [...pagesData, ...categoriesData].sort((a, b) => {
+                if (a.is_home) return -1;
+                if (b.is_home) return 1;
+                const dateA = a.updated_at ? new Date(a.updated_at).getTime() : 0;
+                const dateB = b.updated_at ? new Date(b.updated_at).getTime() : 0;
+                return dateB - dateA;
+            });
         },
     });
 
@@ -42,21 +88,36 @@ export default function AdminPages() {
             if (error) throw error;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["admin_pages"] });
+            queryClient.invalidateQueries({ queryKey: ["admin_pages_combined"] });
             toast.success("Page deleted successfully");
         },
         onError: () => toast.error("Failed to delete page"),
     });
 
-    const handleDelete = async (id: string) => {
-        if (confirm("Are you sure you want to delete this page? This cannot be undone.")) {
-            deletePageMutation.mutate(id);
+    const deleteCategoryMutation = useMutation({
+        mutationFn: async (id: string) => {
+            const { error } = await supabase.from("categories").delete().eq("id", id);
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["admin_pages_combined"] });
+            toast.success("Collection deleted successfully");
+        },
+        onError: () => toast.error("Failed to delete collection"),
+    });
+
+    const handleDelete = async (item: PageItem) => {
+        if (!confirm(`Are you sure you want to delete this ${item.type}? This cannot be undone.`)) return;
+
+        if (item.type === 'page') {
+            deletePageMutation.mutate(item.id);
+        } else {
+            deleteCategoryMutation.mutate(item.id);
         }
     };
 
     const createPageMutation = useMutation({
         mutationFn: async () => {
-            // Create a new draft immediately and redirect to it
             const { data, error } = await supabase.from("pages").insert({
                 title: "Untitled Page",
                 slug: `untitled-${Date.now()}`,
@@ -79,12 +140,20 @@ export default function AdminPages() {
             <div className="flex justify-between items-center mb-6">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Pages</h1>
-                    <p className="text-muted-foreground">Manage your custom website pages.</p>
+                    <p className="text-muted-foreground">Manage your custom pages and collections.</p>
                 </div>
-                <Button onClick={() => createPageMutation.mutate()} disabled={createPageMutation.isPending}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Create New Page
-                </Button>
+                <div className="flex gap-2">
+                    <Button variant="outline" asChild>
+                        <Link to="/admin/collections/new">
+                            <Plus className="mr-2 h-4 w-4" />
+                            New Collection
+                        </Link>
+                    </Button>
+                    <Button onClick={() => createPageMutation.mutate()} disabled={createPageMutation.isPending}>
+                        <Plus className="mr-2 h-4 w-4" />
+                        New Page
+                    </Button>
+                </div>
             </div>
 
             <div className="rounded-md border bg-white">
@@ -93,6 +162,7 @@ export default function AdminPages() {
                         <TableRow>
                             <TableHead>Title</TableHead>
                             <TableHead>URL Slug</TableHead>
+                            <TableHead>Type</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead>Last Updated</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
@@ -101,22 +171,26 @@ export default function AdminPages() {
                     <TableBody>
                         {isLoading ? (
                             <TableRow>
-                                <TableCell colSpan={5} className="h-24 text-center">
+                                <TableCell colSpan={6} className="h-24 text-center">
                                     Loading pages...
                                 </TableCell>
                             </TableRow>
                         ) : pages?.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                                     No pages found. Create your first page!
                                 </TableCell>
                             </TableRow>
                         ) : (
                             pages?.map((page) => (
-                                <TableRow key={page.id}>
+                                <TableRow key={`${page.type}-${page.id}`}>
                                     <TableCell className="font-medium">
                                         <div className="flex items-center">
-                                            <FileText className="mr-2 h-4 w-4 text-muted-foreground" />
+                                            {page.type === 'page' ? (
+                                                <FileText className="mr-2 h-4 w-4 text-muted-foreground" />
+                                            ) : (
+                                                <LayoutGrid className="mr-2 h-4 w-4 text-blue-500" />
+                                            )}
                                             {page.title}
                                             {page.is_home && (
                                                 <Badge variant="secondary" className="ml-2">Home</Badge>
@@ -127,25 +201,36 @@ export default function AdminPages() {
                                         <code className="bg-muted px-1.5 py-0.5 rounded text-sm">/{page.slug}</code>
                                     </TableCell>
                                     <TableCell>
+                                        <Badge variant="outline" className="capitalize">
+                                            {page.type}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell>
                                         <Badge variant={page.status === 'published' ? 'default' : 'secondary'}>
                                             {page.status}
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="text-muted-foreground text-sm">
-                                        {format(new Date(page.updated_at), "MMM d, yyyy")}
+                                        {page.updated_at ? format(new Date(page.updated_at), "MMM d, yyyy") : "-"}
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-2">
                                             <Button variant="ghost" size="icon" asChild>
-                                                <Link to="/admin/pages/$pageId" params={{ pageId: page.id }}>
-                                                    <Edit className="h-4 w-4" />
-                                                </Link>
+                                                {page.type === 'page' ? (
+                                                    <Link to="/admin/pages/$pageId" params={{ pageId: page.id }}>
+                                                        <Edit className="h-4 w-4" />
+                                                    </Link>
+                                                ) : (
+                                                    <Link to="/admin/collections/$collectionId" params={{ collectionId: page.id }}>
+                                                        <Edit className="h-4 w-4" />
+                                                    </Link>
+                                                )}
                                             </Button>
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
                                                 className="text-destructive hover:text-destructive"
-                                                onClick={() => handleDelete(page.id)}
+                                                onClick={() => handleDelete(page)}
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>
