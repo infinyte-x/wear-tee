@@ -3,7 +3,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { BlockData } from "./types";
 import { BlockRenderer } from "./BlockRenderer";
-import { GripVertical, Trash2 } from "lucide-react";
+import { GripVertical, Trash2, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -12,9 +12,10 @@ interface SortableBlockProps {
     isSelected: boolean;
     onSelect: (id: string) => void;
     onDelete: (id: string) => void;
+    onDuplicate?: (id: string) => void;
 }
 
-export function SortableBlock({ block, isSelected, onSelect, onDelete }: SortableBlockProps) {
+export function SortableBlock({ block, isSelected, onSelect, onDelete, onDuplicate }: SortableBlockProps) {
     const {
         attributes,
         listeners,
@@ -58,6 +59,20 @@ export function SortableBlock({ block, isSelected, onSelect, onDelete }: Sortabl
                 <div {...attributes} {...listeners} className="bg-white p-2 rounded border shadow-sm cursor-grab hover:bg-muted">
                     <GripVertical className="h-4 w-4 text-muted-foreground" />
                 </div>
+                {onDuplicate && (
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8 bg-white"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onDuplicate(block.id);
+                        }}
+                        title="Duplicate block"
+                    >
+                        <Copy className="h-4 w-4" />
+                    </Button>
+                )}
                 <Button
                     variant="destructive"
                     size="icon"
@@ -73,4 +88,3 @@ export function SortableBlock({ block, isSelected, onSelect, onDelete }: Sortabl
         </div>
     );
 }
-

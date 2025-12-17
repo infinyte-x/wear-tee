@@ -11,7 +11,14 @@ export type BlockType =
     | 'testimonials'
     | 'video'
     | 'cta'
-    | 'columns';
+    | 'columns'
+    | 'spacer'
+    | 'countdown'
+    | 'category-grid'
+    | 'stats'
+    | 'logo-carousel'
+    | 'map'
+    | 'social-feed';
 
 export interface BlockData {
     id: string;

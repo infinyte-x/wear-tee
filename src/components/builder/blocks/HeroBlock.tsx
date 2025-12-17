@@ -2,11 +2,13 @@ import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "@tanstack/react-router";
 
 interface HeroSlide {
     image?: string;
     title?: string;
     subtitle?: string;
+    description?: string;
     button1Text?: string;
     button1Link?: string;
     button2Text?: string;
@@ -21,6 +23,19 @@ interface HeroBlockProps {
         showDots?: boolean;
         showArrows?: boolean;
         overlayOpacity?: number;
+        // NEW OPTIONS
+        height?: 'small' | 'medium' | 'large' | 'fullscreen' | 'custom';
+        customHeight?: number;
+        textAlign?: 'left' | 'center' | 'right';
+        contentPosition?: 'top' | 'center' | 'bottom';
+        overlayType?: 'solid' | 'gradient' | 'gradient-radial';
+        overlayColor?: string;
+        contentWidth?: 'narrow' | 'medium' | 'wide' | 'full';
+        fullWidth?: boolean;
+        showBadge?: boolean;
+        badgeText?: string;
+        parallax?: boolean;
+        animation?: 'none' | 'fade' | 'slide' | 'zoom';
     };
 }
 
@@ -32,7 +47,94 @@ export function HeroBlock({ content }: HeroBlockProps) {
     const showArrows = content.showArrows ?? true;
     const overlayOpacity = content.overlayOpacity ?? 0.5;
 
+    // New options with defaults
+    const height = content.height || 'large';
+    const customHeight = content.customHeight || 500;
+    const textAlign = content.textAlign || 'center';
+    const contentPosition = content.contentPosition || 'center';
+    const overlayType = content.overlayType || 'solid';
+    const overlayColor = content.overlayColor || '#000000';
+    const contentWidth = content.contentWidth || 'medium';
+    const fullWidth = content.fullWidth ?? false;
+    const showBadge = content.showBadge ?? false;
+    const badgeText = content.badgeText || 'New';
+    const parallax = content.parallax ?? false;
+    const animation = content.animation || 'fade';
+
     const [currentSlide, setCurrentSlide] = useState(0);
+
+    // Height classes
+    const getHeightClass = () => {
+        switch (height) {
+            case 'small': return 'min-h-[300px] md:min-h-[350px]';
+            case 'medium': return 'min-h-[400px] md:min-h-[500px]';
+            case 'large': return 'min-h-[500px] md:min-h-[640px]';
+            case 'fullscreen': return 'min-h-screen';
+            case 'custom': return '';
+            default: return 'min-h-[500px] md:min-h-[640px]';
+        }
+    };
+
+    // Content width classes
+    const getContentWidthClass = () => {
+        switch (contentWidth) {
+            case 'narrow': return 'max-w-xl';
+            case 'medium': return 'max-w-3xl';
+            case 'wide': return 'max-w-5xl';
+            case 'full': return 'max-w-full';
+            default: return 'max-w-3xl';
+        }
+    };
+
+    // Content position classes
+    const getPositionClass = () => {
+        switch (contentPosition) {
+            case 'top': return 'items-start pt-20';
+            case 'bottom': return 'items-end pb-20';
+            default: return 'items-center';
+        }
+    };
+
+    // Text alignment classes
+    const getTextAlignClass = () => {
+        switch (textAlign) {
+            case 'left': return 'text-left items-start';
+            case 'right': return 'text-right items-end';
+            default: return 'text-center items-center';
+        }
+    };
+
+    // Overlay styles
+    const getOverlayStyle = () => {
+        const baseOpacity = overlayOpacity;
+        switch (overlayType) {
+            case 'gradient':
+                return {
+                    background: `linear-gradient(to top, ${overlayColor} 0%, transparent 100%)`,
+                    opacity: baseOpacity + 0.3,
+                };
+            case 'gradient-radial':
+                return {
+                    background: `radial-gradient(circle at center, transparent 0%, ${overlayColor} 100%)`,
+                    opacity: baseOpacity + 0.2,
+                };
+            default:
+                return {
+                    backgroundColor: overlayColor,
+                    opacity: baseOpacity,
+                };
+        }
+    };
+
+    // Animation classes
+    const getAnimationClass = () => {
+        switch (animation) {
+            case 'fade': return 'transition-opacity duration-500';
+            case 'slide': return 'transition-transform duration-500';
+            case 'zoom': return 'transition-all duration-700';
+            default: return '';
+        }
+    };
 
     // Auto-play functionality
     useEffect(() => {
@@ -60,65 +162,102 @@ export function HeroBlock({ content }: HeroBlockProps) {
     const slide = slides[currentSlide] || {};
 
     return (
-        <div className="relative overflow-hidden rounded-lg">
+        <div className={cn("relative overflow-hidden", !fullWidth && "rounded-lg")}>
             {/* Background Image */}
             <div
-                className="relative min-h-[300px] md:min-h-[480px] lg:min-h-[640px] flex items-center justify-center transition-all duration-500"
+                className={cn(
+                    "relative flex justify-center transition-all duration-500",
+                    getHeightClass(),
+                    getPositionClass(),
+                    getAnimationClass()
+                )}
                 style={{
                     backgroundImage: slide.image ? `url(${slide.image})` : undefined,
                     backgroundSize: "cover",
                     backgroundPosition: "center",
+                    backgroundAttachment: parallax ? 'fixed' : 'scroll',
                     backgroundColor: slide.image ? undefined : "#18181b",
+                    ...(height === 'custom' ? { minHeight: `${customHeight}px` } : {}),
                 }}
             >
                 {/* Overlay */}
                 <div
-                    className="absolute inset-0 bg-black"
-                    style={{ opacity: overlayOpacity }}
+                    className="absolute inset-0"
+                    style={getOverlayStyle()}
                 />
 
+                {/* Badge */}
+                {showBadge && badgeText && (
+                    <div className="absolute top-6 left-1/2 -translate-x-1/2 z-20">
+                        <span className="px-4 py-1.5 bg-white/90 text-black text-xs font-medium uppercase tracking-wider rounded-full">
+                            {badgeText}
+                        </span>
+                    </div>
+                )}
+
                 {/* Content */}
-                <div className="relative z-10 text-center px-8 py-20 max-w-4xl mx-auto">
-                    <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 transition-all duration-300">
+                <div className={cn(
+                    "relative z-10 px-4 sm:px-8 py-8 sm:py-16 w-full flex flex-col mx-auto",
+                    getContentWidthClass(),
+                    getTextAlignClass()
+                )}>
+                    {slide.subtitle && (
+                        <p className="text-xs sm:text-sm md:text-base text-white/70 uppercase tracking-widest mb-2 sm:mb-4">
+                            {slide.subtitle}
+                        </p>
+                    )}
+                    <h2 className={cn(
+                        "font-bold text-white mb-3 sm:mb-4 transition-all duration-300 leading-tight",
+                        height === 'small'
+                            ? "text-2xl sm:text-3xl md:text-4xl"
+                            : "text-3xl sm:text-4xl md:text-5xl lg:text-6xl"
+                    )}>
                         {slide.title || "Hero Title"}
                     </h2>
-                    <p className="text-xl text-white/80 mb-8 transition-all duration-300">
-                        {slide.subtitle || "Subtitle goes here"}
-                    </p>
+                    {slide.description && (
+                        <p className="text-base sm:text-lg md:text-xl text-white/80 mb-6 sm:mb-8 max-w-2xl">
+                            {slide.description}
+                        </p>
+                    )}
 
-                    {/* Buttons */}
-                    <div className="flex items-center justify-center gap-4 flex-wrap">
+                    {/* Buttons - stack on mobile */}
+                    <div className={cn(
+                        "flex flex-col sm:flex-row gap-3 sm:gap-4",
+                        textAlign === 'center' && "sm:justify-center items-center",
+                        textAlign === 'right' && "sm:justify-end items-end",
+                        textAlign === 'left' && "items-start"
+                    )}>
                         {slide.button1Text && (
-                            <a href={slide.button1Link || "#"}>
-                                <Button size="lg" className="bg-white text-black hover:bg-white/90">
+                            <Link to={slide.button1Link || "#"} className="w-full sm:w-auto">
+                                <Button size="lg" className="w-full sm:w-auto bg-white text-black hover:bg-white/90 font-medium">
                                     {slide.button1Text}
                                 </Button>
-                            </a>
+                            </Link>
                         )}
                         {slide.button2Text && (
-                            <a href={slide.button2Link || "#"}>
-                                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
+                            <Link to={slide.button2Link || "#"} className="w-full sm:w-auto">
+                                <Button size="lg" variant="outline" className="w-full sm:w-auto border-white text-white hover:bg-white/10">
                                     {slide.button2Text}
                                 </Button>
-                            </a>
+                            </Link>
                         )}
                     </div>
                 </div>
 
-                {/* Navigation Arrows */}
+                {/* Navigation Arrows - hidden on mobile, visible on md+ */}
                 {showArrows && slides.length > 1 && (
                     <>
                         <button
                             onClick={goToPrev}
-                            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/20 hover:bg-white/30 text-white transition-colors"
+                            className="hidden sm:block absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 p-1.5 sm:p-2 rounded-full bg-white/20 hover:bg-white/30 text-white transition-colors"
                         >
-                            <ChevronLeft className="h-6 w-6" />
+                            <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
                         </button>
                         <button
                             onClick={goToNext}
-                            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/20 hover:bg-white/30 text-white transition-colors"
+                            className="hidden sm:block absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 p-1.5 sm:p-2 rounded-full bg-white/20 hover:bg-white/30 text-white transition-colors"
                         >
-                            <ChevronRight className="h-6 w-6" />
+                            <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
                         </button>
                     </>
                 )}
@@ -144,3 +283,4 @@ export function HeroBlock({ content }: HeroBlockProps) {
         </div>
     );
 }
+

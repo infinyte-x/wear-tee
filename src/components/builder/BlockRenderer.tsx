@@ -13,6 +13,13 @@ import { VideoBlock } from "./blocks/VideoBlock";
 import { CTABlock } from "./blocks/CTABlock";
 import { ColumnsBlock } from "./blocks/ColumnsBlock";
 import { GalleryBlock } from "./blocks/GalleryBlock";
+import { SpacerBlock } from "./blocks/SpacerBlock";
+import { CountdownBlock } from "./blocks/CountdownBlock";
+import { CategoryGridBlock } from "./blocks/CategoryGridBlock";
+import { StatsBlock } from "./blocks/StatsBlock";
+import { LogoCarouselBlock } from "./blocks/LogoCarouselBlock";
+import { MapBlock } from "./blocks/MapBlock";
+import { SocialFeedBlock } from "./blocks/SocialFeedBlock";
 
 // Inline components for simple blocks
 const TextBlock = ({ content }: { content: any }) => (
@@ -45,8 +52,14 @@ export function BlockRenderer({ block }: { block: BlockData }) {
         case 'cta': return <CTABlock content={block.content} />;
         case 'columns': return <ColumnsBlock content={block.content} />;
         case 'gallery': return <GalleryBlock content={block.content} />;
+        case 'spacer': return <SpacerBlock content={block.content} />;
+        case 'countdown': return <CountdownBlock content={block.content} />;
+        case 'category-grid': return <CategoryGridBlock content={block.content} />;
+        case 'stats': return <StatsBlock content={block.content} />;
+        case 'logo-carousel': return <LogoCarouselBlock content={block.content} />;
+        case 'map': return <MapBlock content={block.content} />;
+        case 'social-feed': return <SocialFeedBlock content={block.content} />;
         default: return <div className="p-4 border border-dashed text-center text-muted-foreground">Unknown block: {block.type}</div>;
     }
 }
-
 

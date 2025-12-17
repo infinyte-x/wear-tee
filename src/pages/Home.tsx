@@ -8,6 +8,7 @@ import { getCart, getCartCount } from "@/lib/cart";
 import { BlockData } from "@/components/builder/types";
 import { BlockRenderer } from "@/components/builder/BlockRenderer";
 import { Loader2 } from "lucide-react";
+import { getThemeStyle, PageTheme } from "@/lib/theme";
 
 // Fallback content if DB fetch fails (for safety)
 import DynamicHeroSection from "@/components/DynamicHeroSection";
@@ -48,8 +49,11 @@ const Index = () => {
   // If page found in DB, render using Builder engine
   if (homePage && homePage.content) {
     const blocks = homePage.content as unknown as BlockData[];
+    // @ts-ignore
+    const themeStyle = homePage.theme ? getThemeStyle(homePage.theme as unknown as PageTheme) : undefined;
+
     return (
-      <div className="min-h-screen bg-background flex flex-col">
+      <div className="min-h-screen bg-background flex flex-col" style={themeStyle}>
         <Navbar cartCount={cartCount} />
         <main className="flex-1">
           {blocks.map(block => (

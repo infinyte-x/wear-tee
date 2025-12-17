@@ -30,6 +30,10 @@ import { SEOPanel } from "@/components/builder/SEOPanel";
 import { usePageVersions } from "@/hooks/usePageVersions";
 import { CompactImageUpload } from "@/components/admin/CompactImageUpload";
 import { VersionHistoryPanel } from "@/components/builder/VersionHistoryPanel";
+import { RichTextEditor } from "@/components/builder/RichTextEditor";
+import { BlockTemplates } from "@/components/builder/BlockTemplates";
+import { ThemePanel } from "@/components/builder/ThemePanel";
+import { PageTheme, getThemeStyle } from "@/lib/theme";
 
 // Helper to get icon for overlay
 const getIconForType = (type: BlockType) => {
@@ -53,6 +57,7 @@ export default function PageBuilder() {
     const [activeId, setActiveId] = useState<string | null>(null);
     const [activeSidebarItem, setActiveSidebarItem] = useState<BlockType | null>(null);
     const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
+    const [theme, setTheme] = useState<PageTheme | null>(null);
     const [previewMode, setPreviewMode] = useState<PreviewMode>('desktop');
     const [seoData, setSeoData] = useState<{
         meta_title?: string;
@@ -109,6 +114,12 @@ export default function PageBuilder() {
                 description: page.meta_description || '',
                 meta_image: page.meta_image || '',
             });
+            // Load theme from page data
+            // @ts-ignore - theme column added via migration but types not updated
+            if (page.theme) {
+                // @ts-ignore
+                setTheme(page.theme as unknown as PageTheme);
+            }
         }
     }, [page, resetHistory]);
 
@@ -149,6 +160,7 @@ export default function PageBuilder() {
                     meta_title: seoData.meta_title || null,
                     meta_description: seoData.description || null,
                     meta_image: seoData.meta_image || null,
+                    theme: theme as any, // Save theme data
                     updated_at: new Date().toISOString()
                 })
                 .eq("id", id!);
@@ -211,6 +223,23 @@ export default function PageBuilder() {
     const handleDeleteBlock = (blockId: string) => {
         setBlocks(prev => prev.filter(b => b.id !== blockId));
         if (selectedBlockId === blockId) setSelectedBlockId(null);
+    };
+
+    const handleDuplicateBlock = (blockId: string) => {
+        setBlocks(prev => {
+            const blockIndex = prev.findIndex(b => b.id === blockId);
+            if (blockIndex === -1) return prev;
+            const blockToCopy = prev[blockIndex];
+            const newBlock: BlockData = {
+                ...blockToCopy,
+                id: crypto.randomUUID(),
+                content: JSON.parse(JSON.stringify(blockToCopy.content)) // Deep copy
+            };
+            const newBlocks = [...prev];
+            newBlocks.splice(blockIndex + 1, 0, newBlock);
+            return newBlocks;
+        });
+        toast.success('Block duplicated');
     };
 
     if (isLoading) {
@@ -308,6 +337,23 @@ export default function PageBuilder() {
 
                         <div className="w-px h-6 bg-border mx-1" />
 
+                        {/* Block Templates */}
+                        <BlockTemplates
+                            onInsertTemplate={(templateBlocks) => {
+                                setBlocks(prev => [...prev, ...templateBlocks]);
+                                toast.success('Template added');
+                            }}
+                        />
+
+                        {/* Theme Panel */}
+                        <ThemePanel
+                            currentTheme={theme}
+                            onThemeChange={(newTheme) => {
+                                setTheme(newTheme);
+                                toast.success('Theme updated');
+                            }}
+                        />
+
                         <Button variant="outline" size="sm" asChild>
                             <a href={page.is_home ? '/' : `/${page.slug}`} target="_blank" rel="noopener noreferrer">
                                 <Eye className="h-4 w-4 mr-2" />
@@ -339,7 +385,9 @@ export default function PageBuilder() {
                             selectedBlockId={selectedBlockId}
                             onSelectBlock={setSelectedBlockId}
                             onDeleteBlock={handleDeleteBlock}
+                            onDuplicateBlock={handleDuplicateBlock}
                             previewWidth={previewWidths[previewMode]}
+                            style={theme ? getThemeStyle(theme) : undefined}
                         />
 
                         {/* Right Sidebar: Settings */}
@@ -367,11 +415,10 @@ export default function PageBuilder() {
 
                                             {selectedBlock.type === 'text' && (
                                                 <div className="space-y-2">
-                                                    <label className="text-sm font-medium">Content (HTML allowed)</label>
-                                                    <textarea
-                                                        className="w-full min-h-[200px] p-2 border rounded text-sm font-mono"
+                                                    <label className="text-sm font-medium">Content</label>
+                                                    <RichTextEditor
                                                         value={selectedBlock.content.text || ''}
-                                                        onChange={(e) => updateContent('text', e.target.value)}
+                                                        onChange={(value) => updateContent('text', value)}
                                                         placeholder="Enter text..."
                                                     />
                                                 </div>
@@ -577,6 +624,133 @@ export default function PageBuilder() {
                                                             />
                                                         </div>
                                                     </div>
+
+                                                    {/* Layout & Style Settings */}
+                                                    <div className="pt-4 border-t space-y-3">
+                                                        <p className="text-xs font-semibold text-muted-foreground">Layout & Style</p>
+
+                                                        <div className="grid grid-cols-2 gap-3">
+                                                            <div className="space-y-1">
+                                                                <label className="text-xs text-muted-foreground">Height</label>
+                                                                <select
+                                                                    className="w-full p-2 border rounded text-sm"
+                                                                    value={selectedBlock.content.height || 'large'}
+                                                                    onChange={(e) => updateContent('height', e.target.value)}
+                                                                >
+                                                                    <option value="small">Small</option>
+                                                                    <option value="medium">Medium</option>
+                                                                    <option value="large">Large</option>
+                                                                    <option value="fullscreen">Full Screen</option>
+                                                                </select>
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                <label className="text-xs text-muted-foreground">Text Align</label>
+                                                                <select
+                                                                    className="w-full p-2 border rounded text-sm"
+                                                                    value={selectedBlock.content.textAlign || 'center'}
+                                                                    onChange={(e) => updateContent('textAlign', e.target.value)}
+                                                                >
+                                                                    <option value="left">Left</option>
+                                                                    <option value="center">Center</option>
+                                                                    <option value="right">Right</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="grid grid-cols-2 gap-3">
+                                                            <div className="space-y-1">
+                                                                <label className="text-xs text-muted-foreground">Content Position</label>
+                                                                <select
+                                                                    className="w-full p-2 border rounded text-sm"
+                                                                    value={selectedBlock.content.contentPosition || 'center'}
+                                                                    onChange={(e) => updateContent('contentPosition', e.target.value)}
+                                                                >
+                                                                    <option value="top">Top</option>
+                                                                    <option value="center">Center</option>
+                                                                    <option value="bottom">Bottom</option>
+                                                                </select>
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                <label className="text-xs text-muted-foreground">Content Width</label>
+                                                                <select
+                                                                    className="w-full p-2 border rounded text-sm"
+                                                                    value={selectedBlock.content.contentWidth || 'medium'}
+                                                                    onChange={(e) => updateContent('contentWidth', e.target.value)}
+                                                                >
+                                                                    <option value="narrow">Narrow</option>
+                                                                    <option value="medium">Medium</option>
+                                                                    <option value="wide">Wide</option>
+                                                                    <option value="full">Full Width</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="grid grid-cols-2 gap-3">
+                                                            <div className="space-y-1">
+                                                                <label className="text-xs text-muted-foreground">Overlay Type</label>
+                                                                <select
+                                                                    className="w-full p-2 border rounded text-sm"
+                                                                    value={selectedBlock.content.overlayType || 'solid'}
+                                                                    onChange={(e) => updateContent('overlayType', e.target.value)}
+                                                                >
+                                                                    <option value="solid">Solid</option>
+                                                                    <option value="gradient">Gradient (Bottom)</option>
+                                                                    <option value="gradient-radial">Radial Gradient</option>
+                                                                </select>
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                <label className="text-xs text-muted-foreground">Overlay Color</label>
+                                                                <input
+                                                                    type="color"
+                                                                    className="w-full h-9 p-1 border rounded"
+                                                                    value={selectedBlock.content.overlayColor || '#000000'}
+                                                                    onChange={(e) => updateContent('overlayColor', e.target.value)}
+                                                                />
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="flex items-center gap-2">
+                                                            <input
+                                                                type="checkbox"
+                                                                id="heroParallax"
+                                                                checked={selectedBlock.content.parallax || false}
+                                                                onChange={(e) => updateContent('parallax', e.target.checked)}
+                                                            />
+                                                            <label htmlFor="heroParallax" className="text-sm">Enable parallax effect</label>
+                                                        </div>
+
+                                                        <div className="flex items-center gap-2">
+                                                            <input
+                                                                type="checkbox"
+                                                                id="heroFullWidth"
+                                                                checked={selectedBlock.content.fullWidth || false}
+                                                                onChange={(e) => updateContent('fullWidth', e.target.checked)}
+                                                            />
+                                                            <label htmlFor="heroFullWidth" className="text-sm">Full width (no rounded corners)</label>
+                                                        </div>
+
+                                                        <div className="flex items-center gap-2">
+                                                            <input
+                                                                type="checkbox"
+                                                                id="heroShowBadge"
+                                                                checked={selectedBlock.content.showBadge || false}
+                                                                onChange={(e) => updateContent('showBadge', e.target.checked)}
+                                                            />
+                                                            <label htmlFor="heroShowBadge" className="text-sm">Show badge</label>
+                                                        </div>
+
+                                                        {selectedBlock.content.showBadge && (
+                                                            <div className="space-y-1">
+                                                                <label className="text-xs text-muted-foreground">Badge Text</label>
+                                                                <input
+                                                                    className="w-full p-2 border rounded text-sm"
+                                                                    value={selectedBlock.content.badgeText || 'New'}
+                                                                    onChange={(e) => updateContent('badgeText', e.target.value)}
+                                                                    placeholder="New Collection"
+                                                                />
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             )}
 
@@ -618,8 +792,76 @@ export default function PageBuilder() {
                                                             className="w-full p-2 border rounded text-sm"
                                                             value={selectedBlock.content.subtitle || ''}
                                                             onChange={(e) => updateContent('subtitle', e.target.value)}
+                                                            placeholder="Curated Selection"
                                                         />
                                                     </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Description</label>
+                                                        <textarea
+                                                            className="w-full p-2 border rounded text-sm"
+                                                            rows={2}
+                                                            value={selectedBlock.content.description || ''}
+                                                            onChange={(e) => updateContent('description', e.target.value)}
+                                                            placeholder="Optional description text"
+                                                        />
+                                                    </div>
+
+                                                    <div className="grid grid-cols-2 gap-3">
+                                                        <div className="space-y-2">
+                                                            <label className="text-sm font-medium">Products to Show</label>
+                                                            <select
+                                                                className="w-full p-2 border rounded text-sm"
+                                                                value={selectedBlock.content.limit || 4}
+                                                                onChange={(e) => updateContent('limit', parseInt(e.target.value))}
+                                                            >
+                                                                <option value={2}>2</option>
+                                                                <option value={3}>3</option>
+                                                                <option value={4}>4</option>
+                                                                <option value={6}>6</option>
+                                                                <option value={8}>8</option>
+                                                                <option value={12}>12</option>
+                                                            </select>
+                                                        </div>
+                                                        <div className="space-y-2">
+                                                            <label className="text-sm font-medium">Columns</label>
+                                                            <select
+                                                                className="w-full p-2 border rounded text-sm"
+                                                                value={selectedBlock.content.columns || 4}
+                                                                onChange={(e) => updateContent('columns', parseInt(e.target.value))}
+                                                            >
+                                                                <option value={2}>2 Columns</option>
+                                                                <option value={3}>3 Columns</option>
+                                                                <option value={4}>4 Columns</option>
+                                                                <option value={5}>5 Columns</option>
+                                                                <option value={6}>6 Columns</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Sort By</label>
+                                                        <select
+                                                            className="w-full p-2 border rounded text-sm"
+                                                            value={selectedBlock.content.sortBy || 'newest'}
+                                                            onChange={(e) => updateContent('sortBy', e.target.value)}
+                                                        >
+                                                            <option value="newest">Newest First</option>
+                                                            <option value="price-low">Price: Low to High</option>
+                                                            <option value="price-high">Price: High to Low</option>
+                                                            <option value="name">Name A-Z</option>
+                                                        </select>
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Category Filter</label>
+                                                        <input
+                                                            className="w-full p-2 border rounded text-sm"
+                                                            value={selectedBlock.content.category || ''}
+                                                            onChange={(e) => updateContent('category', e.target.value)}
+                                                            placeholder="Leave empty for all categories"
+                                                        />
+                                                    </div>
+
                                                     <div className="flex items-center gap-2">
                                                         <input
                                                             type="checkbox"
@@ -628,6 +870,91 @@ export default function PageBuilder() {
                                                             onChange={(e) => updateContent('featuredOnly', e.target.checked)}
                                                         />
                                                         <label htmlFor="featuredOnly" className="text-sm">Show Featured Only</label>
+                                                    </div>
+
+                                                    <div className="border-t pt-4 mt-4">
+                                                        <div className="flex items-center gap-2 mb-3">
+                                                            <input
+                                                                type="checkbox"
+                                                                id="showViewAllButton"
+                                                                checked={selectedBlock.content.showViewAllButton !== false}
+                                                                onChange={(e) => updateContent('showViewAllButton', e.target.checked)}
+                                                            />
+                                                            <label htmlFor="showViewAllButton" className="text-sm font-medium">Show "View All" Button</label>
+                                                        </div>
+                                                        {selectedBlock.content.showViewAllButton !== false && (
+                                                            <div className="space-y-3 pl-6">
+                                                                <div className="space-y-1">
+                                                                    <label className="text-xs text-muted-foreground">Button Text</label>
+                                                                    <input
+                                                                        className="w-full p-2 border rounded text-sm"
+                                                                        value={selectedBlock.content.viewAllText || 'View All Products'}
+                                                                        onChange={(e) => updateContent('viewAllText', e.target.value)}
+                                                                    />
+                                                                </div>
+                                                                <div className="space-y-1">
+                                                                    <label className="text-xs text-muted-foreground">Button Link</label>
+                                                                    <input
+                                                                        className="w-full p-2 border rounded text-sm"
+                                                                        value={selectedBlock.content.viewAllLink || '/products'}
+                                                                        onChange={(e) => updateContent('viewAllLink', e.target.value)}
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Layout Settings */}
+                                                    <div className="border-t pt-4 mt-4">
+                                                        <p className="text-xs font-semibold text-muted-foreground mb-3">Layout Settings</p>
+                                                        <div className="grid grid-cols-2 gap-3">
+                                                            <div className="space-y-1">
+                                                                <label className="text-xs text-muted-foreground">Gap Size</label>
+                                                                <select
+                                                                    className="w-full p-2 border rounded text-sm"
+                                                                    value={selectedBlock.content.gap || 'large'}
+                                                                    onChange={(e) => updateContent('gap', e.target.value)}
+                                                                >
+                                                                    <option value="small">Small</option>
+                                                                    <option value="medium">Medium</option>
+                                                                    <option value="large">Large</option>
+                                                                </select>
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                <label className="text-xs text-muted-foreground">Padding</label>
+                                                                <select
+                                                                    className="w-full p-2 border rounded text-sm"
+                                                                    value={selectedBlock.content.padding || 'large'}
+                                                                    onChange={(e) => updateContent('padding', e.target.value)}
+                                                                >
+                                                                    <option value="none">None</option>
+                                                                    <option value="small">Small</option>
+                                                                    <option value="medium">Medium</option>
+                                                                    <option value="large">Large</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div className="space-y-1 mt-3">
+                                                            <label className="text-xs text-muted-foreground">Header Alignment</label>
+                                                            <select
+                                                                className="w-full p-2 border rounded text-sm"
+                                                                value={selectedBlock.content.headerAlign || 'center'}
+                                                                onChange={(e) => updateContent('headerAlign', e.target.value)}
+                                                            >
+                                                                <option value="left">Left</option>
+                                                                <option value="center">Center</option>
+                                                                <option value="right">Right</option>
+                                                            </select>
+                                                        </div>
+                                                        <div className="flex items-center gap-2 mt-3">
+                                                            <input
+                                                                type="checkbox"
+                                                                id="showSubtitle"
+                                                                checked={selectedBlock.content.showSubtitle !== false}
+                                                                onChange={(e) => updateContent('showSubtitle', e.target.checked)}
+                                                            />
+                                                            <label htmlFor="showSubtitle" className="text-sm">Show Subtitle</label>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             )}
@@ -640,15 +967,87 @@ export default function PageBuilder() {
                                                             className="w-full p-2 border rounded text-sm"
                                                             value={selectedBlock.content.title || ''}
                                                             onChange={(e) => updateContent('title', e.target.value)}
+                                                            placeholder="Stay Updated"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Subtitle</label>
+                                                        <input
+                                                            className="w-full p-2 border rounded text-sm"
+                                                            value={selectedBlock.content.subtitle || ''}
+                                                            onChange={(e) => updateContent('subtitle', e.target.value)}
+                                                            placeholder="Be the first to know"
                                                         />
                                                     </div>
                                                     <div className="space-y-2">
                                                         <label className="text-sm font-medium">Description</label>
-                                                        <input
+                                                        <textarea
                                                             className="w-full p-2 border rounded text-sm"
+                                                            rows={2}
                                                             value={selectedBlock.content.description || ''}
                                                             onChange={(e) => updateContent('description', e.target.value)}
+                                                            placeholder="Subscribe for exclusive offers and updates"
                                                         />
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-3">
+                                                        <div className="space-y-2">
+                                                            <label className="text-sm font-medium">Button Text</label>
+                                                            <input
+                                                                className="w-full p-2 border rounded text-sm"
+                                                                value={selectedBlock.content.buttonText || ''}
+                                                                onChange={(e) => updateContent('buttonText', e.target.value)}
+                                                                placeholder="Subscribe"
+                                                            />
+                                                        </div>
+                                                        <div className="space-y-2">
+                                                            <label className="text-sm font-medium">Placeholder</label>
+                                                            <input
+                                                                className="w-full p-2 border rounded text-sm"
+                                                                value={selectedBlock.content.placeholder || ''}
+                                                                onChange={(e) => updateContent('placeholder', e.target.value)}
+                                                                placeholder="Enter your email"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Style Variant</label>
+                                                        <select
+                                                            className="w-full p-2 border rounded text-sm"
+                                                            value={selectedBlock.content.variant || 'default'}
+                                                            onChange={(e) => updateContent('variant', e.target.value)}
+                                                        >
+                                                            <option value="default">Light</option>
+                                                            <option value="dark">Dark</option>
+                                                            <option value="gradient">Gradient</option>
+                                                            <option value="minimal">Minimal</option>
+                                                        </select>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Background Image (optional)</label>
+                                                        <input
+                                                            className="w-full p-2 border rounded text-sm"
+                                                            value={selectedBlock.content.backgroundImage || ''}
+                                                            onChange={(e) => updateContent('backgroundImage', e.target.value)}
+                                                            placeholder="https://..."
+                                                        />
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <input
+                                                            type="checkbox"
+                                                            id="showNameField"
+                                                            checked={selectedBlock.content.showNameField || false}
+                                                            onChange={(e) => updateContent('showNameField', e.target.checked)}
+                                                        />
+                                                        <label htmlFor="showNameField" className="text-sm">Ask for Name</label>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <input
+                                                            type="checkbox"
+                                                            id="centerAlign"
+                                                            checked={selectedBlock.content.centerAlign !== false}
+                                                            onChange={(e) => updateContent('centerAlign', e.target.checked)}
+                                                        />
+                                                        <label htmlFor="centerAlign" className="text-sm">Center Aligned</label>
                                                     </div>
                                                 </div>
                                             )}
@@ -1086,6 +1485,524 @@ export default function PageBuilder() {
                                                                             updateContent('images', newImages);
                                                                         }}
                                                                         placeholder="Alt text"
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {selectedBlock.type === 'spacer' && (
+                                                <div className="space-y-4">
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Height</label>
+                                                        <select
+                                                            className="w-full p-2 border rounded text-sm"
+                                                            value={selectedBlock.content.height || 'medium'}
+                                                            onChange={(e) => updateContent('height', e.target.value)}
+                                                        >
+                                                            <option value="small">Small (32px)</option>
+                                                            <option value="medium">Medium (64px)</option>
+                                                            <option value="large">Large (96px)</option>
+                                                            <option value="custom">Custom</option>
+                                                        </select>
+                                                    </div>
+                                                    {selectedBlock.content.height === 'custom' && (
+                                                        <div className="space-y-2">
+                                                            <label className="text-sm font-medium">Custom Height (px)</label>
+                                                            <input
+                                                                type="number"
+                                                                className="w-full p-2 border rounded text-sm"
+                                                                value={selectedBlock.content.customHeight || 50}
+                                                                onChange={(e) => updateContent('customHeight', parseInt(e.target.value))}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                    <div className="flex items-center gap-2">
+                                                        <input
+                                                            type="checkbox"
+                                                            id="showDivider"
+                                                            checked={selectedBlock.content.showDivider || false}
+                                                            onChange={(e) => updateContent('showDivider', e.target.checked)}
+                                                        />
+                                                        <label htmlFor="showDivider" className="text-sm">Show Divider Line</label>
+                                                    </div>
+                                                    {selectedBlock.content.showDivider && (
+                                                        <div className="space-y-2">
+                                                            <label className="text-sm font-medium">Divider Style</label>
+                                                            <select
+                                                                className="w-full p-2 border rounded text-sm"
+                                                                value={selectedBlock.content.dividerStyle || 'solid'}
+                                                                onChange={(e) => updateContent('dividerStyle', e.target.value)}
+                                                            >
+                                                                <option value="solid">Solid</option>
+                                                                <option value="dashed">Dashed</option>
+                                                                <option value="dotted">Dotted</option>
+                                                            </select>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            {selectedBlock.type === 'countdown' && (
+                                                <div className="space-y-4">
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Title</label>
+                                                        <input
+                                                            className="w-full p-2 border rounded text-sm"
+                                                            value={selectedBlock.content.title || ''}
+                                                            onChange={(e) => updateContent('title', e.target.value)}
+                                                            placeholder="Sale Ends In..."
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Target Date</label>
+                                                        <input
+                                                            type="datetime-local"
+                                                            className="w-full p-2 border rounded text-sm"
+                                                            value={selectedBlock.content.targetDate?.slice(0, 16) || ''}
+                                                            onChange={(e) => updateContent('targetDate', new Date(e.target.value).toISOString())}
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Size</label>
+                                                        <select
+                                                            className="w-full p-2 border rounded text-sm"
+                                                            value={selectedBlock.content.variant || 'default'}
+                                                            onChange={(e) => updateContent('variant', e.target.value)}
+                                                        >
+                                                            <option value="compact">Compact</option>
+                                                            <option value="default">Default</option>
+                                                            <option value="large">Large</option>
+                                                        </select>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <p className="text-sm font-medium">Display Units</p>
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                            {['Days', 'Hours', 'Minutes', 'Seconds'].map((unit) => (
+                                                                <label key={unit} className="flex items-center gap-2 text-sm">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={selectedBlock.content[`show${unit}`] !== false}
+                                                                        onChange={(e) => updateContent(`show${unit}`, e.target.checked)}
+                                                                    />
+                                                                    {unit}
+                                                                </label>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {selectedBlock.type === 'category-grid' && (
+                                                <div className="space-y-4">
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Title</label>
+                                                        <input
+                                                            className="w-full p-2 border rounded text-sm"
+                                                            value={selectedBlock.content.title || ''}
+                                                            onChange={(e) => updateContent('title', e.target.value)}
+                                                            placeholder="Shop by Category"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Subtitle</label>
+                                                        <input
+                                                            className="w-full p-2 border rounded text-sm"
+                                                            value={selectedBlock.content.subtitle || ''}
+                                                            onChange={(e) => updateContent('subtitle', e.target.value)}
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Columns</label>
+                                                        <select
+                                                            className="w-full p-2 border rounded text-sm"
+                                                            value={selectedBlock.content.columns || 3}
+                                                            onChange={(e) => updateContent('columns', parseInt(e.target.value))}
+                                                        >
+                                                            <option value={2}>2 Columns</option>
+                                                            <option value={3}>3 Columns</option>
+                                                            <option value={4}>4 Columns</option>
+                                                        </select>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Max Categories</label>
+                                                        <input
+                                                            type="number"
+                                                            className="w-full p-2 border rounded text-sm"
+                                                            value={selectedBlock.content.limit || 6}
+                                                            onChange={(e) => updateContent('limit', parseInt(e.target.value))}
+                                                            min={1}
+                                                            max={12}
+                                                        />
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <input
+                                                            type="checkbox"
+                                                            id="showDescription"
+                                                            checked={selectedBlock.content.showDescription || false}
+                                                            onChange={(e) => updateContent('showDescription', e.target.checked)}
+                                                        />
+                                                        <label htmlFor="showDescription" className="text-sm">Show Description</label>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {selectedBlock.type === 'stats' && (
+                                                <div className="space-y-4">
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Title (optional)</label>
+                                                        <input
+                                                            className="w-full p-2 border rounded text-sm"
+                                                            value={selectedBlock.content.title || ''}
+                                                            onChange={(e) => updateContent('title', e.target.value)}
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Style</label>
+                                                        <select
+                                                            className="w-full p-2 border rounded text-sm"
+                                                            value={selectedBlock.content.variant || 'default'}
+                                                            onChange={(e) => updateContent('variant', e.target.value)}
+                                                        >
+                                                            <option value="default">Default</option>
+                                                            <option value="cards">Cards</option>
+                                                        </select>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <input
+                                                            type="checkbox"
+                                                            id="animateNumbers"
+                                                            checked={selectedBlock.content.animateNumbers !== false}
+                                                            onChange={(e) => updateContent('animateNumbers', e.target.checked)}
+                                                        />
+                                                        <label htmlFor="animateNumbers" className="text-sm">Animate Numbers</label>
+                                                    </div>
+                                                    <div className="flex items-center justify-between">
+                                                        <label className="text-sm font-medium">Stats</label>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => {
+                                                                const items = selectedBlock.content.items || [];
+                                                                updateContent('items', [...items, { value: 100, label: 'New Stat', suffix: '+' }]);
+                                                            }}
+                                                        >
+                                                            + Add
+                                                        </Button>
+                                                    </div>
+                                                    <div className="space-y-3">
+                                                        {(selectedBlock.content.items || []).map((item: any, index: number) => (
+                                                            <div key={index} className="p-3 border rounded bg-background relative">
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="absolute top-1 right-1 h-6 w-6 text-muted-foreground hover:text-destructive"
+                                                                    onClick={() => {
+                                                                        const newItems = [...(selectedBlock.content.items || [])];
+                                                                        newItems.splice(index, 1);
+                                                                        updateContent('items', newItems);
+                                                                    }}
+                                                                >
+                                                                    <Trash2 className="h-3 w-3" />
+                                                                </Button>
+                                                                <div className="space-y-2">
+                                                                    <div className="grid grid-cols-3 gap-2">
+                                                                        <input
+                                                                            className="w-full p-1 border rounded text-xs"
+                                                                            value={item.prefix || ''}
+                                                                            onChange={(e) => {
+                                                                                const newItems = [...(selectedBlock.content.items || [])];
+                                                                                newItems[index] = { ...item, prefix: e.target.value };
+                                                                                updateContent('items', newItems);
+                                                                            }}
+                                                                            placeholder="Prefix"
+                                                                        />
+                                                                        <input
+                                                                            type="number"
+                                                                            className="w-full p-1 border rounded text-xs"
+                                                                            value={item.value}
+                                                                            onChange={(e) => {
+                                                                                const newItems = [...(selectedBlock.content.items || [])];
+                                                                                newItems[index] = { ...item, value: parseInt(e.target.value) };
+                                                                                updateContent('items', newItems);
+                                                                            }}
+                                                                            placeholder="Value"
+                                                                        />
+                                                                        <input
+                                                                            className="w-full p-1 border rounded text-xs"
+                                                                            value={item.suffix || ''}
+                                                                            onChange={(e) => {
+                                                                                const newItems = [...(selectedBlock.content.items || [])];
+                                                                                newItems[index] = { ...item, suffix: e.target.value };
+                                                                                updateContent('items', newItems);
+                                                                            }}
+                                                                            placeholder="Suffix"
+                                                                        />
+                                                                    </div>
+                                                                    <input
+                                                                        className="w-full p-1 border rounded text-xs"
+                                                                        value={item.label}
+                                                                        onChange={(e) => {
+                                                                            const newItems = [...(selectedBlock.content.items || [])];
+                                                                            newItems[index] = { ...item, label: e.target.value };
+                                                                            updateContent('items', newItems);
+                                                                        }}
+                                                                        placeholder="Label"
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {selectedBlock.type === 'logo-carousel' && (
+                                                <div className="space-y-4">
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Title (optional)</label>
+                                                        <input
+                                                            className="w-full p-2 border rounded text-sm"
+                                                            value={selectedBlock.content.title || ''}
+                                                            onChange={(e) => updateContent('title', e.target.value)}
+                                                            placeholder="Trusted By"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Scroll Speed</label>
+                                                        <select
+                                                            className="w-full p-2 border rounded text-sm"
+                                                            value={selectedBlock.content.speed || 'normal'}
+                                                            onChange={(e) => updateContent('speed', e.target.value)}
+                                                        >
+                                                            <option value="slow">Slow</option>
+                                                            <option value="normal">Normal</option>
+                                                            <option value="fast">Fast</option>
+                                                        </select>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <input
+                                                            type="checkbox"
+                                                            id="grayscale"
+                                                            checked={selectedBlock.content.grayscale !== false}
+                                                            onChange={(e) => updateContent('grayscale', e.target.checked)}
+                                                        />
+                                                        <label htmlFor="grayscale" className="text-sm">Grayscale Effect</label>
+                                                    </div>
+                                                    <div className="flex items-center justify-between">
+                                                        <label className="text-sm font-medium">Logos</label>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => {
+                                                                const logos = selectedBlock.content.logos || [];
+                                                                updateContent('logos', [...logos, { url: '', alt: 'Logo' }]);
+                                                            }}
+                                                        >
+                                                            + Add
+                                                        </Button>
+                                                    </div>
+                                                    <div className="space-y-3">
+                                                        {(selectedBlock.content.logos || []).map((logo: any, index: number) => (
+                                                            <div key={index} className="p-3 border rounded bg-background relative">
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="absolute top-1 right-1 h-6 w-6 text-muted-foreground hover:text-destructive"
+                                                                    onClick={() => {
+                                                                        const newLogos = [...(selectedBlock.content.logos || [])];
+                                                                        newLogos.splice(index, 1);
+                                                                        updateContent('logos', newLogos);
+                                                                    }}
+                                                                >
+                                                                    <Trash2 className="h-3 w-3" />
+                                                                </Button>
+                                                                <div className="space-y-2">
+                                                                    <input
+                                                                        className="w-full p-1 border rounded text-xs"
+                                                                        value={logo.url}
+                                                                        onChange={(e) => {
+                                                                            const newLogos = [...(selectedBlock.content.logos || [])];
+                                                                            newLogos[index] = { ...logo, url: e.target.value };
+                                                                            updateContent('logos', newLogos);
+                                                                        }}
+                                                                        placeholder="Logo URL"
+                                                                    />
+                                                                    <input
+                                                                        className="w-full p-1 border rounded text-xs"
+                                                                        value={logo.link || ''}
+                                                                        onChange={(e) => {
+                                                                            const newLogos = [...(selectedBlock.content.logos || [])];
+                                                                            newLogos[index] = { ...logo, link: e.target.value };
+                                                                            updateContent('logos', newLogos);
+                                                                        }}
+                                                                        placeholder="Link URL (optional)"
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {selectedBlock.type === 'map' && (
+                                                <div className="space-y-4">
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Title (optional)</label>
+                                                        <input
+                                                            className="w-full p-2 border rounded text-sm"
+                                                            value={selectedBlock.content.title || ''}
+                                                            onChange={(e) => updateContent('title', e.target.value)}
+                                                            placeholder="Find Us"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Address</label>
+                                                        <textarea
+                                                            className="w-full p-2 border rounded text-sm min-h-[60px]"
+                                                            value={selectedBlock.content.address || ''}
+                                                            onChange={(e) => updateContent('address', e.target.value)}
+                                                            placeholder="123 Main St, City, Country"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Google Maps Embed URL</label>
+                                                        <input
+                                                            className="w-full p-2 border rounded text-sm"
+                                                            value={selectedBlock.content.embedUrl || ''}
+                                                            onChange={(e) => updateContent('embedUrl', e.target.value)}
+                                                            placeholder="https://www.google.com/maps/embed?pb=..."
+                                                        />
+                                                        <p className="text-xs text-muted-foreground">Or use static image below</p>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Static Map Image URL</label>
+                                                        <input
+                                                            className="w-full p-2 border rounded text-sm"
+                                                            value={selectedBlock.content.mapImage || ''}
+                                                            onChange={(e) => updateContent('mapImage', e.target.value)}
+                                                        />
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <input
+                                                            type="checkbox"
+                                                            id="showAddressCard"
+                                                            checked={selectedBlock.content.showAddressCard !== false}
+                                                            onChange={(e) => updateContent('showAddressCard', e.target.checked)}
+                                                        />
+                                                        <label htmlFor="showAddressCard" className="text-sm">Show Address Card</label>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Button Text</label>
+                                                        <input
+                                                            className="w-full p-2 border rounded text-sm"
+                                                            value={selectedBlock.content.buttonText || ''}
+                                                            onChange={(e) => updateContent('buttonText', e.target.value)}
+                                                            placeholder="Get Directions"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {selectedBlock.type === 'social-feed' && (
+                                                <div className="space-y-4">
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Title</label>
+                                                        <input
+                                                            className="w-full p-2 border rounded text-sm"
+                                                            value={selectedBlock.content.title || ''}
+                                                            onChange={(e) => updateContent('title', e.target.value)}
+                                                            placeholder="Follow Us on Instagram"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Subtitle</label>
+                                                        <input
+                                                            className="w-full p-2 border rounded text-sm"
+                                                            value={selectedBlock.content.subtitle || ''}
+                                                            onChange={(e) => updateContent('subtitle', e.target.value)}
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Instagram Handle</label>
+                                                        <input
+                                                            className="w-full p-2 border rounded text-sm"
+                                                            value={selectedBlock.content.instagramHandle || ''}
+                                                            onChange={(e) => updateContent('instagramHandle', e.target.value)}
+                                                            placeholder="yourbrand"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium">Columns</label>
+                                                        <select
+                                                            className="w-full p-2 border rounded text-sm"
+                                                            value={selectedBlock.content.columns || 6}
+                                                            onChange={(e) => updateContent('columns', parseInt(e.target.value))}
+                                                        >
+                                                            <option value={3}>3 Columns</option>
+                                                            <option value={4}>4 Columns</option>
+                                                            <option value={5}>5 Columns</option>
+                                                            <option value={6}>6 Columns</option>
+                                                        </select>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <input
+                                                            type="checkbox"
+                                                            id="showFollowButton"
+                                                            checked={selectedBlock.content.showFollowButton !== false}
+                                                            onChange={(e) => updateContent('showFollowButton', e.target.checked)}
+                                                        />
+                                                        <label htmlFor="showFollowButton" className="text-sm">Show Follow Button</label>
+                                                    </div>
+                                                    <div className="flex items-center justify-between">
+                                                        <label className="text-sm font-medium">Images</label>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => {
+                                                                const images = selectedBlock.content.images || [];
+                                                                updateContent('images', [...images, { url: '' }]);
+                                                            }}
+                                                        >
+                                                            + Add
+                                                        </Button>
+                                                    </div>
+                                                    <div className="space-y-3">
+                                                        {(selectedBlock.content.images || []).map((img: any, index: number) => (
+                                                            <div key={index} className="p-3 border rounded bg-background relative">
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="absolute top-1 right-1 h-6 w-6 text-muted-foreground hover:text-destructive"
+                                                                    onClick={() => {
+                                                                        const newImages = [...(selectedBlock.content.images || [])];
+                                                                        newImages.splice(index, 1);
+                                                                        updateContent('images', newImages);
+                                                                    }}
+                                                                >
+                                                                    <Trash2 className="h-3 w-3" />
+                                                                </Button>
+                                                                <div className="space-y-2">
+                                                                    <input
+                                                                        className="w-full p-1 border rounded text-xs"
+                                                                        value={img.url}
+                                                                        onChange={(e) => {
+                                                                            const newImages = [...(selectedBlock.content.images || [])];
+                                                                            newImages[index] = { ...img, url: e.target.value };
+                                                                            updateContent('images', newImages);
+                                                                        }}
+                                                                        placeholder="Image URL"
+                                                                    />
+                                                                    <input
+                                                                        className="w-full p-1 border rounded text-xs"
+                                                                        value={img.link || ''}
+                                                                        onChange={(e) => {
+                                                                            const newImages = [...(selectedBlock.content.images || [])];
+                                                                            newImages[index] = { ...img, link: e.target.value };
+                                                                            updateContent('images', newImages);
+                                                                        }}
+                                                                        placeholder="Post Link (optional)"
                                                                     />
                                                                 </div>
                                                             </div>

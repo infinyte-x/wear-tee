@@ -6,6 +6,7 @@ import { BlockData } from "@/components/builder/types";
 import { BlockRenderer } from "@/components/builder/BlockRenderer";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { getThemeStyle, PageTheme } from "@/lib/theme";
 
 const routeApi = getRouteApi('/$')
 
@@ -45,9 +46,11 @@ export default function Page() {
     }
 
     const blocks = (page.content as unknown as BlockData[]) || [];
+    // @ts-ignore
+    const themeStyle = page.theme ? getThemeStyle(page.theme as unknown as PageTheme) : undefined;
 
     return (
-        <div className="min-h-screen flex flex-col">
+        <div className="min-h-screen flex flex-col" style={themeStyle}>
             <Navbar />
             <main className={`flex-1 ${page.is_home ? '' : 'pt-20'}`}>
                 {page.is_home ? null : (
