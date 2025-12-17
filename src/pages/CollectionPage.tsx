@@ -62,7 +62,7 @@ const CollectionPage = () => {
             if (collectionError) throw collectionError;
             setCollection(collectionData);
 
-            // Fetch linked page content if exists
+            // Fetch linked page content if exists, otherwise use collection-template
             if (collectionData.page_id) {
                 const { data: page } = await supabase
                     .from('pages')
@@ -72,6 +72,17 @@ const CollectionPage = () => {
 
                 if (page) {
                     setPageData(page as PageData);
+                }
+            } else {
+                // Fallback to collection-template page for all collections
+                const { data: templatePage } = await supabase
+                    .from('pages')
+                    .select('id, content, meta_title, meta_description')
+                    .eq('slug', 'collection-template')
+                    .single();
+
+                if (templatePage) {
+                    setPageData(templatePage as PageData);
                 }
             }
 
@@ -144,63 +155,82 @@ const CollectionPage = () => {
         );
     }
 
+    // Check if there's a collection-grid block in the page content
+    const hasCollectionGridBlock = blocks.some(b => b.type === 'collection-grid');
+
     return (
         <div className="min-h-screen bg-background flex flex-col">
             <Navbar cartCount={cartCount} />
 
             <main className="flex-1 pt-20">
-                {/* Render blocks before product grid */}
+                {/* Render blocks before product grid - with collection context */}
                 {beforeBlocks.map((block) => (
-                    <BlockRenderer key={block.id} block={block} />
+                    <BlockRenderer
+                        key={block.id}
+                        block={block}
+                        collectionId={collection.id}
+                        collectionSlug={collection.slug}
+                        collectionTitle={collection.title}
+                        collectionDescription={collection.description || ''}
+                        collectionImage={collection.image || ''}
+                    />
                 ))}
 
-                {/* Collection Header (if no custom blocks) */}
-                {beforeBlocks.length === 0 && (
-                    <div className="container mx-auto px-6 py-16">
-                        <div className="mb-12 fade-in">
-                            <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-4">
-                                Collection
-                            </p>
-                            <h1 className="text-5xl md:text-6xl font-serif mb-4">{collection.title}</h1>
-                            {collection.description && (
-                                <p className="text-muted-foreground max-w-2xl leading-relaxed">
-                                    {collection.description}
+                {/* Hardcoded Product Grid - only show if no collection-grid block exists */}
+                {!hasCollectionGridBlock && (
+                    <div className="container mx-auto px-6 pb-16">
+                        {/* Show collection title if no hero block in template */}
+                        {beforeBlocks.length === 0 && (
+                            <div className="mb-12 fade-in py-8">
+                                <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-4">
+                                    Collection
                                 </p>
-                            )}
-                        </div>
+                                <h1 className="text-5xl md:text-6xl font-serif mb-4">{collection.title}</h1>
+                                {collection.description && (
+                                    <p className="text-muted-foreground max-w-2xl leading-relaxed">
+                                        {collection.description}
+                                    </p>
+                                )}
+                            </div>
+                        )}
+
+                        {products.length === 0 ? (
+                            <div className="text-center py-20 fade-in">
+                                <p className="text-muted-foreground">No products in this collection yet.</p>
+                            </div>
+                        ) : (
+                            <>
+                                <p className="text-sm text-muted-foreground mb-6">
+                                    {products.length} product{products.length !== 1 ? 's' : ''}
+                                </p>
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8 stagger-children">
+                                    {products.map((product) => (
+                                        <ProductCard
+                                            key={product.id}
+                                            id={product.id}
+                                            name={product.name}
+                                            price={product.price}
+                                            image={product.images?.[0]}
+                                            category={product.category}
+                                        />
+                                    ))}
+                                </div>
+                            </>
+                        )}
                     </div>
                 )}
 
-                {/* Product Grid */}
-                <div className="container mx-auto px-6 pb-16">
-                    {products.length === 0 ? (
-                        <div className="text-center py-20 fade-in">
-                            <p className="text-muted-foreground">No products in this collection yet.</p>
-                        </div>
-                    ) : (
-                        <>
-                            <p className="text-sm text-muted-foreground mb-6">
-                                {products.length} product{products.length !== 1 ? 's' : ''}
-                            </p>
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8 stagger-children">
-                                {products.map((product) => (
-                                    <ProductCard
-                                        key={product.id}
-                                        id={product.id}
-                                        name={product.name}
-                                        price={product.price}
-                                        image={product.images?.[0]}
-                                        category={product.category}
-                                    />
-                                ))}
-                            </div>
-                        </>
-                    )}
-                </div>
-
                 {/* Render blocks after product grid */}
                 {afterBlocks.map((block) => (
-                    <BlockRenderer key={block.id} block={block} />
+                    <BlockRenderer
+                        key={block.id}
+                        block={block}
+                        collectionId={collection.id}
+                        collectionSlug={collection.slug}
+                        collectionTitle={collection.title}
+                        collectionDescription={collection.description || ''}
+                        collectionImage={collection.image || ''}
+                    />
                 ))}
             </main>
 

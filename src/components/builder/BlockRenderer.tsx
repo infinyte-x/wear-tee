@@ -7,6 +7,7 @@ import { HeroBlock } from "./blocks/HeroBlock";
 import { FeaturesBlock } from "./blocks/FeaturesBlock";
 import { NewsletterBlock } from "./blocks/NewsletterBlock";
 import { ProductGridBlock } from "./blocks/ProductGridBlock";
+import { CollectionGridBlock } from "./blocks/CollectionGridBlock";
 import { FAQBlock } from "./blocks/FAQBlock";
 import { TestimonialsBlock } from "./blocks/TestimonialsBlock";
 import { VideoBlock } from "./blocks/VideoBlock";
@@ -38,14 +39,25 @@ const ImageBlock = ({ content }: { content: any }) => (
     </div>
 );
 
-export function BlockRenderer({ block }: { block: BlockData }) {
+interface BlockRendererProps {
+    block: BlockData;
+    // Collection context for collection-aware blocks
+    collectionId?: string;
+    collectionSlug?: string;
+    collectionTitle?: string;
+    collectionDescription?: string;
+    collectionImage?: string;
+}
+
+export function BlockRenderer({ block, collectionId, collectionSlug, collectionTitle, collectionDescription, collectionImage }: BlockRendererProps) {
     switch (block.type) {
-        case 'hero': return <HeroBlock content={block.content} />;
+        case 'hero': return <HeroBlock content={block.content} collectionTitle={collectionTitle} collectionDescription={collectionDescription} collectionImage={collectionImage} />;
         case 'text': return <TextBlock content={block.content} />;
         case 'image': return <ImageBlock content={block.content} />;
         case 'features': return <FeaturesBlock content={block.content} />;
         case 'newsletter': return <NewsletterBlock content={block.content} />;
         case 'product-grid': return <ProductGridBlock content={block.content} />;
+        case 'collection-grid': return <CollectionGridBlock content={block.content} collectionId={collectionId} collectionSlug={collectionSlug} />;
         case 'faq': return <FAQBlock content={block.content} />;
         case 'testimonials': return <TestimonialsBlock content={block.content} />;
         case 'video': return <VideoBlock content={block.content} />;

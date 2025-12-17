@@ -24,7 +24,7 @@ interface HeroBlockProps {
         showArrows?: boolean;
         overlayOpacity?: number;
         // NEW OPTIONS
-        height?: 'small' | 'medium' | 'large' | 'fullscreen' | 'custom';
+        height?: 'extra-small' | 'small' | 'medium' | 'large' | 'fullscreen' | 'custom';
         customHeight?: number;
         textAlign?: 'left' | 'center' | 'right';
         contentPosition?: 'top' | 'center' | 'bottom';
@@ -36,11 +36,56 @@ interface HeroBlockProps {
         badgeText?: string;
         parallax?: boolean;
         animation?: 'none' | 'fade' | 'slide' | 'zoom';
+        // Dynamic collection mode
+        useCollectionData?: boolean;
+        // Background color (for when no image)
+        backgroundColor?: string;
     };
+    // Collection context props (passed from BlockRenderer on collection pages)
+    collectionTitle?: string;
+    collectionDescription?: string;
+    collectionImage?: string;
 }
 
-export function HeroBlock({ content }: HeroBlockProps) {
-    const slides = content.slides || [{ title: "Hero Title", subtitle: "Subtitle goes here" }];
+export function HeroBlock({ content, collectionTitle, collectionDescription, collectionImage }: HeroBlockProps) {
+    // Check if we should use collection data dynamically
+    const useCollectionData = content.useCollectionData ?? true; // Default to true for collection pages
+
+    // Get the slide data - either from content or from collection context
+    let slides = content.slides || [];
+
+    // If on a collection page and useCollectionData is enabled, inject collection data into slides
+    if (useCollectionData && collectionTitle) {
+        // If no slides defined, create one with collection data
+        if (slides.length === 0) {
+            slides = [{
+                title: collectionTitle,
+                subtitle: 'Collection',
+                description: collectionDescription || '',
+                image: collectionImage || '',
+            }];
+        } else {
+            // Replace first slide's content with collection data (if not explicitly set)
+            slides = slides.map((slide, index) => {
+                if (index === 0) {
+                    return {
+                        ...slide,
+                        title: slide.title || collectionTitle,
+                        subtitle: slide.subtitle || 'Collection',
+                        description: slide.description || collectionDescription || '',
+                        image: slide.image || collectionImage || '',
+                    };
+                }
+                return slide;
+            });
+        }
+    }
+
+    // Fallback if still no slides
+    if (slides.length === 0) {
+        slides = [{ title: "Hero Title", subtitle: "Subtitle goes here" }];
+    }
+
     const autoPlay = content.autoPlay ?? false;
     const autoPlayInterval = content.autoPlayInterval ?? 5000;
     const showDots = content.showDots ?? true;
@@ -60,12 +105,14 @@ export function HeroBlock({ content }: HeroBlockProps) {
     const badgeText = content.badgeText || 'New';
     const parallax = content.parallax ?? false;
     const animation = content.animation || 'fade';
+    const backgroundColor = content.backgroundColor || '#18181b';
 
     const [currentSlide, setCurrentSlide] = useState(0);
 
     // Height classes
     const getHeightClass = () => {
         switch (height) {
+            case 'extra-small': return 'min-h-[200px] md:min-h-[250px]';
             case 'small': return 'min-h-[300px] md:min-h-[350px]';
             case 'medium': return 'min-h-[400px] md:min-h-[500px]';
             case 'large': return 'min-h-[500px] md:min-h-[640px]';
@@ -163,12 +210,11 @@ export function HeroBlock({ content }: HeroBlockProps) {
 
     return (
         <div className={cn("relative overflow-hidden", !fullWidth && "rounded-lg")}>
-            {/* Background Image */}
+            {/* Full-Width Background Image Layer */}
             <div
                 className={cn(
-                    "relative flex justify-center transition-all duration-500",
+                    "relative w-full transition-all duration-500",
                     getHeightClass(),
-                    getPositionClass(),
                     getAnimationClass()
                 )}
                 style={{
@@ -176,7 +222,7 @@ export function HeroBlock({ content }: HeroBlockProps) {
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                     backgroundAttachment: parallax ? 'fixed' : 'scroll',
-                    backgroundColor: slide.image ? undefined : "#18181b",
+                    backgroundColor: slide.image ? undefined : backgroundColor,
                     ...(height === 'custom' ? { minHeight: `${customHeight}px` } : {}),
                 }}
             >
@@ -195,52 +241,62 @@ export function HeroBlock({ content }: HeroBlockProps) {
                     </div>
                 )}
 
-                {/* Content */}
-                <div className={cn(
-                    "relative z-10 px-4 sm:px-8 py-8 sm:py-16 w-full flex flex-col mx-auto",
-                    getContentWidthClass(),
-                    getTextAlignClass()
-                )}>
-                    {slide.subtitle && (
-                        <p className="text-xs sm:text-sm md:text-base text-white/70 uppercase tracking-widest mb-2 sm:mb-4">
-                            {slide.subtitle}
-                        </p>
-                    )}
-                    <h2 className={cn(
-                        "font-bold text-white mb-3 sm:mb-4 transition-all duration-300 leading-tight",
-                        height === 'small'
-                            ? "text-2xl sm:text-3xl md:text-4xl"
-                            : "text-3xl sm:text-4xl md:text-5xl lg:text-6xl"
-                    )}>
-                        {slide.title || "Hero Title"}
-                    </h2>
-                    {slide.description && (
-                        <p className="text-base sm:text-lg md:text-xl text-white/80 mb-6 sm:mb-8 max-w-2xl">
-                            {slide.description}
-                        </p>
-                    )}
-
-                    {/* Buttons - stack on mobile */}
+                {/* Container Layer - same spacing as ProductGridBlock */}
+                <div className="absolute inset-0 z-10 flex">
                     <div className={cn(
-                        "flex flex-col sm:flex-row gap-3 sm:gap-4",
-                        textAlign === 'center' && "sm:justify-center items-center",
-                        textAlign === 'right' && "sm:justify-end items-end",
-                        textAlign === 'left' && "items-start"
+                        "container mx-auto px-6 flex flex-col py-8 sm:py-16",
+                        contentPosition === 'center' && "justify-center",
+                        contentPosition === 'top' && "justify-start",
+                        contentPosition === 'bottom' && "justify-end"
                     )}>
-                        {slide.button1Text && (
-                            <Link to={slide.button1Link || "#"} className="w-full sm:w-auto">
-                                <Button size="lg" className="w-full sm:w-auto bg-white text-black hover:bg-white/90 font-medium">
-                                    {slide.button1Text}
-                                </Button>
-                            </Link>
-                        )}
-                        {slide.button2Text && (
-                            <Link to={slide.button2Link || "#"} className="w-full sm:w-auto">
-                                <Button size="lg" variant="outline" className="w-full sm:w-auto border-white text-white hover:bg-white/10">
-                                    {slide.button2Text}
-                                </Button>
-                            </Link>
-                        )}
+                        {/* Content wrapper for text alignment and max-width */}
+                        <div className={cn(
+                            "flex flex-col",
+                            getContentWidthClass(),
+                            getTextAlignClass()
+                        )}>
+                            {slide.subtitle && (
+                                <p className="text-xs sm:text-sm md:text-base text-white/70 uppercase tracking-widest mb-2 sm:mb-4">
+                                    {slide.subtitle}
+                                </p>
+                            )}
+                            <h2 className={cn(
+                                "font-bold text-white mb-3 sm:mb-4 transition-all duration-300 leading-tight",
+                                height === 'small'
+                                    ? "text-2xl sm:text-3xl md:text-4xl"
+                                    : "text-3xl sm:text-4xl md:text-5xl lg:text-6xl"
+                            )}>
+                                {slide.title || "Hero Title"}
+                            </h2>
+                            {slide.description && (
+                                <p className="text-base sm:text-lg md:text-xl text-white/80 mb-6 sm:mb-8 max-w-2xl">
+                                    {slide.description}
+                                </p>
+                            )}
+
+                            {/* Buttons - stack on mobile */}
+                            <div className={cn(
+                                "flex flex-col sm:flex-row gap-3 sm:gap-4",
+                                textAlign === 'center' && "sm:justify-center items-center",
+                                textAlign === 'right' && "sm:justify-end items-end",
+                                textAlign === 'left' && "items-start"
+                            )}>
+                                {slide.button1Text && (
+                                    <Link to={slide.button1Link || "#"} className="w-full sm:w-auto">
+                                        <Button size="lg" className="w-full sm:w-auto bg-white text-black hover:bg-white/90 font-medium">
+                                            {slide.button1Text}
+                                        </Button>
+                                    </Link>
+                                )}
+                                {slide.button2Text && (
+                                    <Link to={slide.button2Link || "#"} className="w-full sm:w-auto">
+                                        <Button size="lg" variant="outline" className="w-full sm:w-auto border-white text-white hover:bg-white/10">
+                                            {slide.button2Text}
+                                        </Button>
+                                    </Link>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 </div>
 

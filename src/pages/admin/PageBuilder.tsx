@@ -637,6 +637,7 @@ export default function PageBuilder() {
                                                                     value={selectedBlock.content.height || 'large'}
                                                                     onChange={(e) => updateContent('height', e.target.value)}
                                                                 >
+                                                                    <option value="extra-small">Extra Small</option>
                                                                     <option value="small">Small</option>
                                                                     <option value="medium">Medium</option>
                                                                     <option value="large">Large</option>
@@ -705,6 +706,30 @@ export default function PageBuilder() {
                                                                     className="w-full h-9 p-1 border rounded"
                                                                     value={selectedBlock.content.overlayColor || '#000000'}
                                                                     onChange={(e) => updateContent('overlayColor', e.target.value)}
+                                                                />
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="grid grid-cols-2 gap-3">
+                                                            <div className="space-y-1">
+                                                                <label className="text-xs text-muted-foreground">Background Color</label>
+                                                                <input
+                                                                    type="color"
+                                                                    className="w-full h-9 p-1 border rounded"
+                                                                    value={selectedBlock.content.backgroundColor || '#18181b'}
+                                                                    onChange={(e) => updateContent('backgroundColor', e.target.value)}
+                                                                />
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                <label className="text-xs text-muted-foreground">Overlay Opacity</label>
+                                                                <input
+                                                                    type="range"
+                                                                    min="0"
+                                                                    max="1"
+                                                                    step="0.1"
+                                                                    className="w-full h-9"
+                                                                    value={selectedBlock.content.overlayOpacity || 0.5}
+                                                                    onChange={(e) => updateContent('overlayOpacity', parseFloat(e.target.value))}
                                                                 />
                                                             </div>
                                                         </div>

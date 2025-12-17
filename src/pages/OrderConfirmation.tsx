@@ -4,6 +4,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { usePageBlocks } from "@/hooks/usePageBlocks";
+import { PageBlocks } from "@/components/PageBlocks";
 import { CheckCircle, Package, Phone, MapPin, CreditCard } from "lucide-react";
 
 interface Order {
@@ -39,6 +41,9 @@ const OrderConfirmation = () => {
   const [order, setOrder] = useState<Order | null>(null);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Fetch page builder blocks for the order confirmation page
+  const { data: pageData } = usePageBlocks("order-confirmation");
 
   useEffect(() => {
     if (orderId) {
@@ -106,17 +111,24 @@ const OrderConfirmation = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar cartCount={0} />
 
+      {/* Page Builder Blocks - Header Section */}
+      {pageData?.blocks && pageData.blocks.length > 0 && (
+        <PageBlocks blocks={pageData.blocks} position="top" />
+      )}
+
       <main className="flex-1 container mx-auto px-6 py-16 pt-24 max-w-4xl">
-        {/* Success Header */}
-        <div className="text-center mb-12 fade-in">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-6">
-            <CheckCircle className="h-10 w-10 text-green-600" />
+        {/* Success Header - only show if no page builder blocks */}
+        {(!pageData?.blocks || pageData.blocks.length === 0) && (
+          <div className="text-center mb-12 fade-in">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-6">
+              <CheckCircle className="h-10 w-10 text-green-600" />
+            </div>
+            <h1 className="text-3xl md:text-4xl font-serif mb-4">Order Confirmed!</h1>
+            <p className="text-muted-foreground">
+              Thank you for your order. We'll contact you shortly to confirm delivery.
+            </p>
           </div>
-          <h1 className="text-3xl md:text-4xl font-serif mb-4">Order Confirmed!</h1>
-          <p className="text-muted-foreground">
-            Thank you for your order. We'll contact you shortly to confirm delivery.
-          </p>
-        </div>
+        )}
 
         {/* Order ID */}
         <div className="bg-stone p-6 text-center mb-8 fade-in">

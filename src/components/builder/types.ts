@@ -5,6 +5,7 @@ export type BlockType =
     | 'image'
     | 'gallery'
     | 'product-grid'
+    | 'collection-grid'
     | 'features'
     | 'newsletter'
     | 'faq'

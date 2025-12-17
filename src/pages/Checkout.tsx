@@ -23,6 +23,8 @@ import {
 } from "@/lib/cart";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { usePageBlocks } from "@/hooks/usePageBlocks";
+import { PageBlocks } from "@/components/PageBlocks";
 import { toast } from "sonner";
 import { Loader2, Phone, MapPin, CreditCard, Truck } from "lucide-react";
 
@@ -61,6 +63,9 @@ const Checkout = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartCount, setCartCount] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Fetch page builder blocks for the checkout page
+  const { data: pageData } = usePageBlocks("checkout");
 
   // Form state
   const [phone, setPhone] = useState("");
@@ -229,11 +234,19 @@ const Checkout = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar cartCount={cartCount} />
 
+      {/* Page Builder Blocks - Header Section */}
+      {pageData?.blocks && pageData.blocks.length > 0 && (
+        <PageBlocks blocks={pageData.blocks} position="top" />
+      )}
+
       <main className="flex-1 container mx-auto px-6 py-16 pt-24">
-        <div className="mb-12 fade-in">
-          <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-4">Checkout</p>
-          <h1 className="text-4xl md:text-5xl font-serif">Complete Your Order</h1>
-        </div>
+        {/* Only show default header if no page builder blocks */}
+        {(!pageData?.blocks || pageData.blocks.length === 0) && (
+          <div className="mb-12 fade-in">
+            <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-4">Checkout</p>
+            <h1 className="text-4xl md:text-5xl font-serif">Complete Your Order</h1>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           <div className="grid lg:grid-cols-3 gap-12">

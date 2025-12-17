@@ -26,6 +26,9 @@ const collectionSchema = z.object({
     image: z.string().optional(),
     is_active: z.boolean().default(true),
     product_ids: z.array(z.string()).default([]),
+    // SEO fields
+    meta_title: z.string().optional(),
+    meta_description: z.string().optional(),
 });
 
 type CollectionFormValues = z.infer<typeof collectionSchema>;
@@ -47,6 +50,8 @@ const CollectionEditor = () => {
             image: '',
             is_active: true,
             product_ids: [],
+            meta_title: '',
+            meta_description: '',
         },
     });
 
@@ -110,6 +115,8 @@ const CollectionEditor = () => {
                 image: collection.image || '',
                 is_active: collection.is_active ?? true,
                 product_ids: collection.product_ids || [],
+                meta_title: collection.meta_title || '',
+                meta_description: collection.meta_description || '',
             });
         }
     }, [collection, form]);
@@ -124,6 +131,8 @@ const CollectionEditor = () => {
                 description: values.description,
                 image: values.image,
                 is_active: values.is_active,
+                meta_title: values.meta_title || null,
+                meta_description: values.meta_description || null,
             };
 
             // 1. Upsert Collection
@@ -338,6 +347,53 @@ const CollectionEditor = () => {
                                 <div className="mt-2 text-sm text-muted-foreground">
                                     {form.watch('product_ids').length} products selected
                                 </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* SEO Settings Card */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>SEO Settings</CardTitle>
+                                <CardDescription>Optimize this collection for search engines</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <FormField
+                                    control={form.control}
+                                    name="meta_title"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Meta Title</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="SEO title (defaults to collection title)" {...field} />
+                                            </FormControl>
+                                            <CardDescription>
+                                                Recommended: 50-60 characters
+                                            </CardDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    control={form.control}
+                                    name="meta_description"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Meta Description</FormLabel>
+                                            <FormControl>
+                                                <Textarea
+                                                    placeholder="Brief description for search results..."
+                                                    {...field}
+                                                    rows={3}
+                                                />
+                                            </FormControl>
+                                            <CardDescription>
+                                                Recommended: 150-160 characters
+                                            </CardDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
                             </CardContent>
                         </Card>
                     </form>

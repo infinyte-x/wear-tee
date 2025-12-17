@@ -3,6 +3,8 @@ import { Link } from '@tanstack/react-router';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useWishlist } from '@/hooks/useWishlist';
+import { usePageBlocks } from '@/hooks/usePageBlocks';
+import { PageBlocks } from '@/components/PageBlocks';
 import { Button } from '@/components/ui/button';
 import { addToCart, getCart, getCartCount } from '@/lib/cart';
 import { toast } from 'sonner';
@@ -12,6 +14,9 @@ import { cn } from '@/lib/utils';
 const Wishlist = () => {
     const { items, isLoading, removeFromWishlist } = useWishlist();
     const [cartCount, setCartCount] = useState(getCartCount(getCart()));
+
+    // Fetch page builder blocks for the wishlist page
+    const { data: pageData } = usePageBlocks("wishlist");
 
     const handleAddToCart = (productId: string, productName: string, price: number, image: string) => {
         addToCart({
@@ -42,14 +47,21 @@ const Wishlist = () => {
         <div className="min-h-screen bg-background flex flex-col">
             <Navbar cartCount={cartCount} />
 
+            {/* Page Builder Blocks - Header Section */}
+            {pageData?.blocks && pageData.blocks.length > 0 && (
+                <PageBlocks blocks={pageData.blocks} position="top" />
+            )}
+
             <main className="flex-1 container mx-auto px-6 pt-24 pb-16">
-                {/* Header */}
-                <div className="mb-8">
-                    <h1 className="text-3xl font-serif tracking-wide mb-2">My Wishlist</h1>
-                    <p className="text-muted-foreground">
-                        {items.length} {items.length === 1 ? 'item' : 'items'} saved
-                    </p>
-                </div>
+                {/* Header - only show if no page builder blocks */}
+                {(!pageData?.blocks || pageData.blocks.length === 0) && (
+                    <div className="mb-8">
+                        <h1 className="text-3xl font-serif tracking-wide mb-2">My Wishlist</h1>
+                        <p className="text-muted-foreground">
+                            {items.length} {items.length === 1 ? 'item' : 'items'} saved
+                        </p>
+                    </div>
+                )}
 
                 {/* Empty State */}
                 {items.length === 0 ? (

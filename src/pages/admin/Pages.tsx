@@ -14,7 +14,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash2, FileText, LayoutGrid } from "lucide-react";
+import { Plus, Edit, Trash2, FileText, LayoutGrid, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -27,6 +27,17 @@ type PageItem = {
     is_home?: boolean;
     type: 'page' | 'collection';
 }
+
+// System page slugs - these are core pages that come with the system
+const SYSTEM_PAGE_SLUGS = ['cart', 'checkout', 'collection-template', 'order-confirmation', 'wishlist'];
+
+const isSystemPage = (slug: string) => {
+    const normalizedSlug = slug.toLowerCase().replace(/^\//, '');
+    return SYSTEM_PAGE_SLUGS.some(systemSlug =>
+        normalizedSlug === systemSlug ||
+        normalizedSlug.includes(systemSlug)
+    );
+};
 
 export default function AdminPages() {
     const navigate = useNavigate();
@@ -82,6 +93,11 @@ export default function AdminPages() {
         },
     });
 
+    // Separate pages into system pages and custom pages
+    const systemPages = pages?.filter(p => p.type === 'page' && isSystemPage(p.slug)) || [];
+    const customPages = pages?.filter(p => p.type === 'page' && !isSystemPage(p.slug)) || [];
+    const collectionPages = pages?.filter(p => p.type === 'collection') || [];
+
     const deletePageMutation = useMutation({
         mutationFn: async (id: string) => {
             const { error } = await supabase.from("pages").delete().eq("id", id);
@@ -135,6 +151,64 @@ export default function AdminPages() {
         onError: () => toast.error("Failed to create new page")
     });
 
+    const renderPageRow = (page: PageItem, isSystem: boolean = false) => (
+        <TableRow key={`${page.type}-${page.id}`}>
+            <TableCell className="font-medium">
+                <div className="flex items-center">
+                    {page.type === 'page' ? (
+                        isSystem ? (
+                            <Settings className="mr-2 h-4 w-4 text-orange-500" />
+                        ) : (
+                            <FileText className="mr-2 h-4 w-4 text-muted-foreground" />
+                        )
+                    ) : (
+                        <LayoutGrid className="mr-2 h-4 w-4 text-blue-500" />
+                    )}
+                    {page.title}
+                    {page.is_home && (
+                        <Badge variant="secondary" className="ml-2">Home</Badge>
+                    )}
+                </div>
+            </TableCell>
+            <TableCell>
+                <code className="bg-muted px-1.5 py-0.5 rounded text-sm">/{page.slug}</code>
+            </TableCell>
+            <TableCell>
+                <Badge variant={page.status === 'published' ? 'default' : 'secondary'}>
+                    {page.status}
+                </Badge>
+            </TableCell>
+            <TableCell className="text-muted-foreground text-sm">
+                {page.updated_at ? format(new Date(page.updated_at), "MMM d, yyyy") : "-"}
+            </TableCell>
+            <TableCell className="text-right">
+                <div className="flex justify-end gap-2">
+                    <Button variant="ghost" size="icon" asChild>
+                        {page.type === 'page' ? (
+                            <Link to="/admin/pages/$pageId" params={{ pageId: page.id }}>
+                                <Edit className="h-4 w-4" />
+                            </Link>
+                        ) : (
+                            <Link to="/admin/collections/$collectionId" params={{ collectionId: page.id }}>
+                                <Edit className="h-4 w-4" />
+                            </Link>
+                        )}
+                    </Button>
+                    {!isSystem && (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => handleDelete(page)}
+                        >
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
+                    )}
+                </div>
+            </TableCell>
+        </TableRow>
+    );
+
     return (
         <AdminLayout>
             <div className="flex justify-between items-center mb-6">
@@ -156,92 +230,98 @@ export default function AdminPages() {
                 </div>
             </div>
 
-            <div className="rounded-md border bg-white">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Title</TableHead>
-                            <TableHead>URL Slug</TableHead>
-                            <TableHead>Type</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Last Updated</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {isLoading ? (
+            {/* Custom Pages Section */}
+            <div className="mb-8">
+                <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-muted-foreground" />
+                    Custom Pages
+                </h2>
+                <div className="rounded-md border bg-white">
+                    <Table>
+                        <TableHeader>
                             <TableRow>
-                                <TableCell colSpan={6} className="h-24 text-center">
-                                    Loading pages...
-                                </TableCell>
+                                <TableHead>Title</TableHead>
+                                <TableHead>URL Slug</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead>Last Updated</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
-                        ) : pages?.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                                    No pages found. Create your first page!
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            pages?.map((page) => (
-                                <TableRow key={`${page.type}-${page.id}`}>
-                                    <TableCell className="font-medium">
-                                        <div className="flex items-center">
-                                            {page.type === 'page' ? (
-                                                <FileText className="mr-2 h-4 w-4 text-muted-foreground" />
-                                            ) : (
-                                                <LayoutGrid className="mr-2 h-4 w-4 text-blue-500" />
-                                            )}
-                                            {page.title}
-                                            {page.is_home && (
-                                                <Badge variant="secondary" className="ml-2">Home</Badge>
-                                            )}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <code className="bg-muted px-1.5 py-0.5 rounded text-sm">/{page.slug}</code>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant="outline" className="capitalize">
-                                            {page.type}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant={page.status === 'published' ? 'default' : 'secondary'}>
-                                            {page.status}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="text-muted-foreground text-sm">
-                                        {page.updated_at ? format(new Date(page.updated_at), "MMM d, yyyy") : "-"}
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <div className="flex justify-end gap-2">
-                                            <Button variant="ghost" size="icon" asChild>
-                                                {page.type === 'page' ? (
-                                                    <Link to="/admin/pages/$pageId" params={{ pageId: page.id }}>
-                                                        <Edit className="h-4 w-4" />
-                                                    </Link>
-                                                ) : (
-                                                    <Link to="/admin/collections/$collectionId" params={{ collectionId: page.id }}>
-                                                        <Edit className="h-4 w-4" />
-                                                    </Link>
-                                                )}
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="text-destructive hover:text-destructive"
-                                                onClick={() => handleDelete(page)}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </div>
+                        </TableHeader>
+                        <TableBody>
+                            {isLoading ? (
+                                <TableRow>
+                                    <TableCell colSpan={5} className="h-24 text-center">
+                                        Loading pages...
                                     </TableCell>
                                 </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
+                            ) : customPages.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={5} className="h-16 text-center text-muted-foreground">
+                                        No custom pages. Create your first page!
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                customPages.map((page) => renderPageRow(page, false))
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
             </div>
+
+            {/* Collection Templates Section */}
+            {collectionPages.length > 0 && (
+                <div className="mb-8">
+                    <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <LayoutGrid className="h-5 w-5 text-blue-500" />
+                        Collection Templates
+                    </h2>
+                    <div className="rounded-md border bg-white">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Title</TableHead>
+                                    <TableHead>URL Slug</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead>Last Updated</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {collectionPages.map((page) => renderPageRow(page, false))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </div>
+            )}
+
+            {/* System Pages Section */}
+            {systemPages.length > 0 && (
+                <div className="mb-8">
+                    <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <Settings className="h-5 w-5 text-orange-500" />
+                        System Pages
+                    </h2>
+                    <p className="text-sm text-muted-foreground mb-3">
+                        These are core pages that power your store. Edit with caution.
+                    </p>
+                    <div className="rounded-md border bg-white">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Title</TableHead>
+                                    <TableHead>URL Slug</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead>Last Updated</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {systemPages.map((page) => renderPageRow(page, true))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </div>
+            )}
         </AdminLayout>
     );
 }

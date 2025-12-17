@@ -19,7 +19,8 @@ import {
     TrendingUp,
     CircleDot,
     MapPin,
-    Instagram
+    Instagram,
+    Package
 } from "lucide-react";
 import { BlockDefinition } from "./types";
 
@@ -37,6 +38,7 @@ const AVAILABLE_BLOCKS: BlockDefinition[] = [
 
     // E-commerce
     { type: 'product-grid', label: 'Product Grid', icon: ShoppingBag, defaultContent: {} },
+    { type: 'collection-grid', label: 'Collection Products', icon: Package, defaultContent: {} },
     { type: 'category-grid', label: 'Category Grid', icon: Grid3X3, defaultContent: {} },
 
     // Social Proof

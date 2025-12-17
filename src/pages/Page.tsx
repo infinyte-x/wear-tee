@@ -10,12 +10,20 @@ import { getThemeStyle, PageTheme } from "@/lib/theme";
 
 const routeApi = getRouteApi('/$')
 
+// Template pages that should not be publicly accessible
+const TEMPLATE_SLUGS = ['collection-template'];
+
 export default function Page() {
     const { _splat: slug } = routeApi.useParams();
 
     const { data: page, isLoading, error } = useQuery({
         queryKey: ["page", slug],
         queryFn: async () => {
+            // Block access to template pages
+            if (TEMPLATE_SLUGS.includes(slug!)) {
+                throw new Error("Template page not accessible");
+            }
+
             const { data, error } = await supabase
                 .from("pages")
                 .select("*")

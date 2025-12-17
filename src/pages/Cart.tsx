@@ -13,11 +13,16 @@ import {
   type CartItem,
 } from "@/lib/cart";
 import { toast } from "sonner";
+import { usePageBlocks } from "@/hooks/usePageBlocks";
+import { PageBlocks } from "@/components/PageBlocks";
 
 const Cart = () => {
   const navigate = useNavigate();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartCount, setCartCount] = useState(0);
+
+  // Fetch page builder blocks for the cart page
+  const { data: pageData } = usePageBlocks("cart");
 
   useEffect(() => {
     loadCart();
@@ -47,11 +52,19 @@ const Cart = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar cartCount={cartCount} />
 
+      {/* Page Builder Blocks - Header Section */}
+      {pageData?.blocks && pageData.blocks.length > 0 && (
+        <PageBlocks blocks={pageData.blocks} position="top" />
+      )}
+
       <main className="flex-1 container mx-auto px-6 py-16 pt-24">
-        <div className="mb-16 fade-in">
-          <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-4">Your Selection</p>
-          <h1 className="text-5xl md:text-6xl font-serif">Shopping Cart</h1>
-        </div>
+        {/* Only show default header if no page builder blocks */}
+        {(!pageData?.blocks || pageData.blocks.length === 0) && (
+          <div className="mb-16 fade-in">
+            <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-4">Your Selection</p>
+            <h1 className="text-5xl md:text-6xl font-serif">Shopping Cart</h1>
+          </div>
+        )}
 
         {cart.length === 0 ? (
           <div className="text-center py-20 fade-in">
