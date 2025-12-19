@@ -8,7 +8,11 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage"
+  },
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -99,5 +103,10 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0",
     "vite": "^7.2.7"
+    "vitest": "^2.1.8",
+    "@vitest/ui": "^2.1.8",
+    "@vitest/coverage-v8": "^2.1.8",
+    "js-yaml": "^4.1.0",
+    "@types/js-yaml": "^4.0.9"
   }
 }
