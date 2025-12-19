@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Instagram, Facebook, Twitter, Mail } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Instagram, Facebook, Twitter } from "lucide-react";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 const Footer = () => {
@@ -12,67 +11,88 @@ const Footer = () => {
     { icon: Instagram, href: settings?.instagram_url, label: "Instagram" },
     { icon: Facebook, href: settings?.facebook_url, label: "Facebook" },
     { icon: Twitter, href: settings?.twitter_url || settings?.tiktok_url, label: "Twitter/X" },
-    { icon: Mail, href: settings?.shop_email ? `mailto:${settings.shop_email}` : null, label: "Email" },
-  ].filter(link => link.href); // Only show links that exist
+  ].filter(link => link.href);
 
-  // Dynamic navigation links from settings
-  const navLinks = (settings?.navigation_items && settings.navigation_items.length > 0)
-    ? settings.navigation_items.map(item => ({
-      to: item.href,
-      label: item.label,
-    }))
-    : [
-      { to: "/products", label: "Shop All" },
-      { to: "/collections", label: "Collections" },
-      { to: "/about", label: "About" },
-    ];
+  // Navigation links
+  const shopLinks = [
+    { to: "/products/men", label: "Men" },
+    { to: "/products/women", label: "Women" },
+    { to: "/products", label: "Shop All" },
+  ];
 
-  // Support links (can be made dynamic later with footer_links setting)
-  const supportLinks = [
-    { to: "/contact", label: "Contact Us" },
-    { to: "/shipping", label: "Shipping & Returns" },
-    { to: "/size-guide", label: "Size Guide" },
+  const helpLinks = [
+    { to: "/contact", label: "Contact" },
+    { to: "/shipping", label: "Shipping" },
+    { to: "/returns", label: "Returns" },
     { to: "/faq", label: "FAQ" },
   ];
 
+  const companyLinks = [
+    { to: "/about", label: "About" },
+    { to: "/careers", label: "Careers" },
+    { to: "/stores", label: "Stores" },
+  ];
+
   return (
-    <footer className="bg-charcoal text-cream">
-      <div className="container mx-auto px-6 py-16 lg:py-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
-          {/* Brand */}
-          <div className="lg:col-span-1 space-y-6">
-            <Link to="/" className="text-3xl font-serif tracking-wide hover:opacity-80 transition-opacity">
-              {settings?.store_name?.toUpperCase() || 'ATELIER'}
+    <footer className="bg-[#181818] text-white">
+      {/* Main Footer */}
+      <div className="w-full px-4 md:px-6 lg:px-8 py-12 md:py-16">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 lg:gap-12">
+
+          {/* Brand + Newsletter */}
+          <div className="col-span-2 md:col-span-4 lg:col-span-2 space-y-6">
+            <Link to="/" className="text-[1rem] tracking-[0.15em] uppercase hover:opacity-80 transition-opacity">
+              {settings?.store_name?.toUpperCase() || 'BRAND'}
             </Link>
-            <p className="text-warm-grey text-sm leading-relaxed max-w-xs">
-              {settings?.seo_description || "Crafting timeless pieces that transcend seasons. Our commitment to quality and understated elegance defines every garment we create."}
-            </p>
-            {/* Social Links */}
-            <div className="flex gap-4 pt-2">
-              {socialLinks.map(({ icon: Icon, href, label }) => (
-                <a
-                  key={label}
-                  href={href!}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={label}
-                  className="p-2 rounded-full border border-warm-grey/30 text-warm-grey hover:text-cream hover:border-cream hover:scale-110 transition-all duration-300"
+
+            {/* Newsletter */}
+            <div className="max-w-sm">
+              <p className="text-[0.65rem] tracking-[0.15em] uppercase text-white/60 mb-4">
+                Subscribe to our newsletter
+              </p>
+              <form className="flex">
+                <input
+                  type="email"
+                  placeholder="Email address"
+                  className="flex-1 bg-transparent border border-white/20 px-4 py-3 text-[0.75rem] text-white placeholder:text-white/40 focus:border-white focus:outline-none transition-colors"
+                />
+                <button
+                  type="submit"
+                  className="bg-white text-[#181818] px-6 py-3 text-[0.65rem] tracking-[0.15em] uppercase hover:bg-white/90 transition-colors"
                 >
-                  <Icon className="h-4 w-4" />
-                </a>
-              ))}
+                  Join
+                </button>
+              </form>
             </div>
+
+            {/* Social Links */}
+            {socialLinks.length > 0 && (
+              <div className="flex gap-4 pt-2">
+                {socialLinks.map(({ icon: Icon, href, label }) => (
+                  <a
+                    key={label}
+                    href={href!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={label}
+                    className="text-white/60 hover:text-white transition-colors"
+                  >
+                    <Icon className="h-5 w-5" />
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Navigation */}
-          <div className="space-y-6">
-            <h4 className="text-xs tracking-[0.2em] uppercase font-medium">Shop</h4>
-            <nav className="flex flex-col gap-3">
-              {navLinks.map((link) => (
+          {/* Shop */}
+          <div className="space-y-4">
+            <h4 className="text-[0.65rem] tracking-[0.2em] uppercase text-white/60">Shop</h4>
+            <nav className="flex flex-col gap-2">
+              {shopLinks.map((link) => (
                 <Link
                   key={link.label}
                   to={link.to}
-                  className="text-warm-grey text-sm hover:text-cream transition-colors duration-300 hover:translate-x-1 transform inline-block"
+                  className="text-[0.75rem] tracking-[0.05em] text-white/80 hover:text-white transition-colors"
                 >
                   {link.label}
                 </Link>
@@ -80,63 +100,56 @@ const Footer = () => {
             </nav>
           </div>
 
-          {/* Support */}
-          <div className="space-y-6">
-            <h4 className="text-xs tracking-[0.2em] uppercase font-medium">Support</h4>
-            <nav className="flex flex-col gap-3">
-              {supportLinks.map((item) => (
+          {/* Help */}
+          <div className="space-y-4">
+            <h4 className="text-[0.65rem] tracking-[0.2em] uppercase text-white/60">Help</h4>
+            <nav className="flex flex-col gap-2">
+              {helpLinks.map((link) => (
                 <Link
-                  key={item.label}
-                  to={item.to}
-                  className="text-warm-grey text-sm hover:text-cream transition-colors duration-300 hover:translate-x-1 transform inline-block"
+                  key={link.label}
+                  to={link.to}
+                  className="text-[0.75rem] tracking-[0.05em] text-white/80 hover:text-white transition-colors"
                 >
-                  {item.label}
+                  {link.label}
                 </Link>
               ))}
             </nav>
           </div>
 
-          {/* Newsletter */}
-          <div className="space-y-6">
-            <h4 className="text-xs tracking-[0.2em] uppercase font-medium">
-              {settings?.footer_newsletter_title || 'Newsletter'}
-            </h4>
-            <p className="text-warm-grey text-sm leading-relaxed">
-              {settings?.footer_newsletter_text || "Subscribe to receive updates, access to exclusive deals, and more."}
-            </p>
-            <form className="flex flex-col gap-3">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="bg-transparent border border-warm-grey/30 px-4 py-3 text-sm text-cream placeholder:text-warm-grey/60 focus:border-cream focus:outline-none transition-colors duration-300"
-              />
-              <button
-                type="submit"
-                className="bg-cream text-charcoal text-xs tracking-widest uppercase py-3 px-6 hover:bg-cream/90 transition-all duration-300 hover:shadow-[0_0_20px_rgba(255,255,255,0.2)]"
-              >
-                Subscribe
-              </button>
-            </form>
+          {/* Company */}
+          <div className="space-y-4">
+            <h4 className="text-[0.65rem] tracking-[0.2em] uppercase text-white/60">Company</h4>
+            <nav className="flex flex-col gap-2">
+              {companyLinks.map((link) => (
+                <Link
+                  key={link.label}
+                  to={link.to}
+                  className="text-[0.75rem] tracking-[0.05em] text-white/80 hover:text-white transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
           </div>
         </div>
+      </div>
 
-        {/* Bottom Bar */}
-        <div className="mt-16 pt-8 border-t border-warm-grey/20">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <p className="text-sm text-warm-grey">
-              {settings?.footer_copyright_text || `© ${currentYear} ${settings?.store_name || 'Atelier'}. All rights reserved.`}
-            </p>
-            <div className="flex gap-6 text-sm text-warm-grey">
-              <span className="hover:text-cream transition-colors duration-300 cursor-pointer">
-                Privacy Policy
-              </span>
-              <span className="hover:text-cream transition-colors duration-300 cursor-pointer">
-                Terms of Service
-              </span>
-              <span className="hover:text-cream transition-colors duration-300 cursor-pointer">
-                Cookies
-              </span>
-            </div>
+      {/* Bottom Bar */}
+      <div className="w-full px-4 md:px-6 lg:px-8 py-6 border-t border-white/10">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-[0.65rem] tracking-[0.1em] text-white/40">
+            © {currentYear} {settings?.store_name || 'Brand'}. All rights reserved.
+          </p>
+          <div className="flex gap-6 text-[0.65rem] tracking-[0.1em] text-white/40">
+            <Link to="/privacy" className="hover:text-white transition-colors">
+              Privacy
+            </Link>
+            <Link to="/terms" className="hover:text-white transition-colors">
+              Terms
+            </Link>
+            <Link to="/cookies" className="hover:text-white transition-colors">
+              Cookies
+            </Link>
           </div>
         </div>
       </div>
@@ -145,4 +158,3 @@ const Footer = () => {
 };
 
 export default Footer;
-

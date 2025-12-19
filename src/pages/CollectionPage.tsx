@@ -122,16 +122,16 @@ const CollectionPage = () => {
         return (
             <div className="min-h-screen bg-background flex flex-col">
                 <Navbar cartCount={cartCount} />
-                <main className="flex-1 container mx-auto px-6 py-16 pt-24">
+                <main className="flex-1 w-full px-4 md:px-6 lg:px-8 py-16 pt-20">
                     <div className="animate-pulse space-y-8">
-                        <div className="h-12 w-1/3 bg-muted rounded" />
-                        <div className="h-6 w-2/3 bg-muted rounded" />
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                        <div className="h-4 w-1/4 bg-neutral-100" />
+                        <div className="h-6 w-1/2 bg-neutral-100" />
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-0.5">
                             {[...Array(8)].map((_, i) => (
-                                <div key={i} className="space-y-4">
-                                    <div className="aspect-[3/4] bg-muted rounded" />
-                                    <div className="h-4 w-3/4 bg-muted rounded" />
-                                    <div className="h-3 w-1/4 bg-muted rounded" />
+                                <div key={i} className="space-y-3">
+                                    <div className="aspect-[3/4] bg-neutral-100" />
+                                    <div className="h-3 w-3/4 bg-neutral-100" />
+                                    <div className="h-3 w-1/4 bg-neutral-100" />
                                 </div>
                             ))}
                         </div>
@@ -146,9 +146,9 @@ const CollectionPage = () => {
         return (
             <div className="min-h-screen bg-background flex flex-col">
                 <Navbar cartCount={cartCount} />
-                <main className="flex-1 container mx-auto px-6 py-16 pt-24 text-center">
-                    <h1 className="text-3xl font-serif mb-4">Collection Not Found</h1>
-                    <p className="text-muted-foreground">The collection you're looking for doesn't exist.</p>
+                <main className="flex-1 w-full px-4 md:px-6 lg:px-8 py-16 pt-20 text-center">
+                    <h1 className="text-[1rem] uppercase tracking-[0.1em] font-normal text-[#181818] mb-4">Collection Not Found</h1>
+                    <p className="text-[0.75rem] text-[#666666]">The collection you're looking for doesn't exist.</p>
                 </main>
                 <Footer />
             </div>
@@ -178,16 +178,16 @@ const CollectionPage = () => {
 
                 {/* Hardcoded Product Grid - only show if no collection-grid block exists */}
                 {!hasCollectionGridBlock && (
-                    <div className="container mx-auto px-6 pb-16">
+                    <div className="w-full px-4 md:px-6 lg:px-8 pb-16">
                         {/* Show collection title if no hero block in template */}
                         {beforeBlocks.length === 0 && (
-                            <div className="mb-12 fade-in py-8">
-                                <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-4">
+                            <div className="mb-8 py-4">
+                                <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#666666] mb-2">
                                     Collection
                                 </p>
-                                <h1 className="text-5xl md:text-6xl font-serif mb-4">{collection.title}</h1>
+                                <h1 className="text-[1rem] md:text-[1.25rem] uppercase tracking-[0.1em] font-normal text-[#181818] mb-2">{collection.title}</h1>
                                 {collection.description && (
-                                    <p className="text-muted-foreground max-w-2xl leading-relaxed">
+                                    <p className="text-[0.75rem] text-[#666666] max-w-2xl">
                                         {collection.description}
                                     </p>
                                 )}
@@ -195,15 +195,15 @@ const CollectionPage = () => {
                         )}
 
                         {products.length === 0 ? (
-                            <div className="text-center py-20 fade-in">
-                                <p className="text-muted-foreground">No products in this collection yet.</p>
+                            <div className="text-center py-20">
+                                <p className="text-[0.75rem] text-[#666666]">No products in this collection yet.</p>
                             </div>
                         ) : (
                             <>
-                                <p className="text-sm text-muted-foreground mb-6">
+                                <p className="text-[0.65rem] tracking-[0.1em] uppercase text-[#666666] mb-4">
                                     {products.length} product{products.length !== 1 ? 's' : ''}
                                 </p>
-                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8 stagger-children">
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-0.5">
                                     {products.map((product) => (
                                         <ProductCard
                                             key={product.id}

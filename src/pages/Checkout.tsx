@@ -239,12 +239,12 @@ const Checkout = () => {
         <PageBlocks blocks={pageData.blocks} position="top" />
       )}
 
-      <main className="flex-1 container mx-auto px-6 py-16 pt-24">
+      <main className="flex-1 w-full px-4 md:px-6 lg:px-8 py-16 pt-20">
         {/* Only show default header if no page builder blocks */}
         {(!pageData?.blocks || pageData.blocks.length === 0) && (
-          <div className="mb-12 fade-in">
-            <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-4">Checkout</p>
-            <h1 className="text-4xl md:text-5xl font-serif">Complete Your Order</h1>
+          <div className="mb-8">
+            <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#666666] mb-2">Checkout</p>
+            <h1 className="text-[1rem] md:text-[1.25rem] uppercase tracking-[0.1em] font-normal text-[#181818]">Complete Your Order</h1>
           </div>
         )}
 
@@ -253,53 +253,53 @@ const Checkout = () => {
             {/* Left Column - Form */}
             <div className="lg:col-span-2 space-y-10">
               {/* Contact Information */}
-              <section className="space-y-6 fade-in">
-                <div className="flex items-center gap-3 pb-4 border-b border-border">
-                  <Phone className="h-5 w-5 text-muted-foreground" />
-                  <h2 className="text-xl font-serif">Contact Information</h2>
+              <section className="space-y-6">
+                <div className="flex items-center gap-3 pb-3 border-b border-[#e5e5e5]">
+                  <Phone className="h-4 w-4 text-[#666666]" />
+                  <h2 className="text-[0.75rem] uppercase tracking-[0.15em] text-[#181818]">Contact Information</h2>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number *</Label>
+                    <label className="block text-[0.65rem] tracking-[0.15em] uppercase text-[#181818]">Phone Number *</label>
                     <Input
                       id="phone"
                       type="tel"
                       placeholder="01XXXXXXXXX"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="bg-background"
+                      className="bg-transparent border-[#e5e5e5] focus:border-[#181818] rounded-none text-[0.875rem]"
                       required
                     />
-                    <p className="text-xs text-muted-foreground">Required for delivery</p>
+                    <p className="text-[0.65rem] text-[#666666]">Required for delivery</p>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="altPhone">Alternative Phone</Label>
+                    <label className="block text-[0.65rem] tracking-[0.15em] uppercase text-[#181818]">Alternative Phone</label>
                     <Input
                       id="altPhone"
                       type="tel"
                       placeholder="01XXXXXXXXX"
                       value={altPhone}
                       onChange={(e) => setAltPhone(e.target.value)}
-                      className="bg-background"
+                      className="bg-transparent border-[#e5e5e5] focus:border-[#181818] rounded-none text-[0.875rem]"
                     />
                   </div>
                 </div>
               </section>
 
               {/* Delivery Address */}
-              <section className="space-y-6 fade-in">
-                <div className="flex items-center gap-3 pb-4 border-b border-border">
-                  <MapPin className="h-5 w-5 text-muted-foreground" />
-                  <h2 className="text-xl font-serif">Delivery Address</h2>
+              <section className="space-y-6">
+                <div className="flex items-center gap-3 pb-3 border-b border-[#e5e5e5]">
+                  <MapPin className="h-4 w-4 text-[#666666]" />
+                  <h2 className="text-[0.75rem] uppercase tracking-[0.15em] text-[#181818]">Delivery Address</h2>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label>Division *</Label>
+                    <label className="block text-[0.65rem] tracking-[0.15em] uppercase text-[#181818]">Division *</label>
                     <Select value={division} onValueChange={setDivision}>
-                      <SelectTrigger className="bg-background">
+                      <SelectTrigger className="bg-transparent border-[#e5e5e5] rounded-none text-[0.875rem]">
                         <SelectValue placeholder="Select Division" />
                       </SelectTrigger>
                       <SelectContent>
@@ -313,9 +313,9 @@ const Checkout = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>District *</Label>
+                    <label className="block text-[0.65rem] tracking-[0.15em] uppercase text-[#181818]">District *</label>
                     <Select value={district} onValueChange={setDistrict} disabled={!division}>
-                      <SelectTrigger className="bg-background">
+                      <SelectTrigger className="bg-transparent border-[#e5e5e5] rounded-none text-[0.875rem]">
                         <SelectValue placeholder="Select District" />
                       </SelectTrigger>
                       <SelectContent>
@@ -330,65 +330,65 @@ const Checkout = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="area">Area / Thana / Upazila *</Label>
+                  <label className="block text-[0.65rem] tracking-[0.15em] uppercase text-[#181818]">Area / Thana / Upazila *</label>
                   <Input
                     id="area"
                     placeholder="Enter your area"
                     value={area}
                     onChange={(e) => setArea(e.target.value)}
-                    className="bg-background"
+                    className="bg-transparent border-[#e5e5e5] focus:border-[#181818] rounded-none text-[0.875rem]"
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="address">Full Address *</Label>
+                  <label className="block text-[0.65rem] tracking-[0.15em] uppercase text-[#181818]">Full Address *</label>
                   <Textarea
                     id="address"
                     placeholder="House no, Road no, Block, etc."
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
-                    className="bg-background min-h-[100px]"
+                    className="bg-transparent border-[#e5e5e5] focus:border-[#181818] rounded-none text-[0.875rem] min-h-[100px]"
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="notes">Order Notes (Optional)</Label>
+                  <label className="block text-[0.65rem] tracking-[0.15em] uppercase text-[#181818]">Order Notes (Optional)</label>
                   <Textarea
                     id="notes"
                     placeholder="Special delivery instructions..."
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    className="bg-background"
+                    className="bg-transparent border-[#e5e5e5] focus:border-[#181818] rounded-none text-[0.875rem]"
                   />
                 </div>
               </section>
 
               {/* Shipping Zone Info */}
               {selectedZone && (
-                <section className="space-y-4 fade-in">
-                  <div className="flex items-center gap-3 pb-4 border-b border-border">
-                    <Truck className="h-5 w-5 text-muted-foreground" />
-                    <h2 className="text-xl font-serif">Shipping</h2>
+                <section className="space-y-4">
+                  <div className="flex items-center gap-3 pb-3 border-b border-[#e5e5e5]">
+                    <Truck className="h-4 w-4 text-[#666666]" />
+                    <h2 className="text-[0.75rem] uppercase tracking-[0.15em] text-[#181818]">Shipping</h2>
                   </div>
 
-                  <div className="bg-stone p-6 rounded-sm">
+                  <div className="bg-neutral-50 p-6">
                     <div className="flex justify-between items-center">
                       <div>
-                        <p className="font-medium">{selectedZone.name}</p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-[0.75rem] text-[#181818]">{selectedZone.name}</p>
+                        <p className="text-[0.65rem] text-[#666666]">
                           {selectedZone.free_shipping_threshold && subtotal >= selectedZone.free_shipping_threshold
                             ? "Free shipping applied!"
                             : `Delivery charge: ৳${selectedZone.base_rate}`}
                         </p>
                       </div>
-                      <p className="text-lg font-serif">
+                      <p className="text-[0.875rem] text-[#181818]">
                         {shippingFee === 0 ? "Free" : `৳${shippingFee}`}
                       </p>
                     </div>
                     {selectedZone.free_shipping_threshold && subtotal < selectedZone.free_shipping_threshold && (
-                      <p className="text-xs text-muted-foreground mt-3">
+                      <p className="text-[0.65rem] text-[#666666] mt-3">
                         Add ৳{(selectedZone.free_shipping_threshold - subtotal).toFixed(0)} more for free shipping
                       </p>
                     )}
@@ -397,27 +397,27 @@ const Checkout = () => {
               )}
 
               {/* Payment Method */}
-              <section className="space-y-6 fade-in">
-                <div className="flex items-center gap-3 pb-4 border-b border-border">
-                  <CreditCard className="h-5 w-5 text-muted-foreground" />
-                  <h2 className="text-xl font-serif">Payment Method</h2>
+              <section className="space-y-6">
+                <div className="flex items-center gap-3 pb-3 border-b border-[#e5e5e5]">
+                  <CreditCard className="h-4 w-4 text-[#666666]" />
+                  <h2 className="text-[0.75rem] uppercase tracking-[0.15em] text-[#181818]">Payment Method</h2>
                 </div>
 
                 <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     {paymentMethods.map((method) => (
                       <label
                         key={method.id}
                         className={`flex items-start gap-4 p-4 border cursor-pointer transition-colors ${paymentMethod === method.id
-                          ? "border-foreground bg-stone"
-                          : "border-border hover:border-muted-foreground"
+                          ? "border-[#181818] bg-neutral-50"
+                          : "border-[#e5e5e5] hover:border-[#181818]"
                           }`}
                       >
                         <RadioGroupItem value={method.id} className="mt-0.5" />
                         <div className="flex-1">
-                          <p className="font-medium">{method.name}</p>
+                          <p className="text-[0.75rem] text-[#181818]">{method.name}</p>
                           {method.type === "mobile_wallet" && method.account_number && (
-                            <p className="text-sm text-muted-foreground mt-1">
+                            <p className="text-[0.65rem] text-[#666666] mt-1">
                               Send to: {method.account_number}
                             </p>
                           )}
@@ -428,8 +428,8 @@ const Checkout = () => {
                 </RadioGroup>
 
                 {selectedPaymentMethod?.instructions && (
-                  <div className="bg-stone p-4 rounded-sm">
-                    <p className="text-sm text-muted-foreground whitespace-pre-line">
+                  <div className="bg-neutral-50 p-4">
+                    <p className="text-[0.75rem] text-[#666666] whitespace-pre-line">
                       {selectedPaymentMethod.instructions}
                     </p>
                   </div>
@@ -439,52 +439,52 @@ const Checkout = () => {
 
             {/* Right Column - Order Summary */}
             <div className="lg:col-span-1">
-              <div className="bg-stone p-8 space-y-6 sticky top-24 fade-in">
-                <h2 className="text-xl font-serif">Order Summary</h2>
+              <div className="bg-neutral-50 p-6 space-y-6 sticky top-16">
+                <h2 className="text-[0.75rem] uppercase tracking-[0.15em] text-[#181818]">Order Summary</h2>
 
                 <div className="space-y-4 max-h-[300px] overflow-y-auto">
                   {cart.map((item) => (
-                    <div key={item.id} className="flex gap-4">
-                      <div className="w-16 h-20 bg-background flex-shrink-0">
+                    <div key={item.id} className="flex gap-3">
+                      <div className="w-14 h-18 bg-white flex-shrink-0">
                         <img
                           src={item.image}
                           alt={item.name}
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <div className="flex-1 text-sm">
-                        <p className="font-medium">{item.name}</p>
-                        <p className="text-muted-foreground">
+                      <div className="flex-1">
+                        <p className="text-[0.75rem] text-[#181818]">{item.name}</p>
+                        <p className="text-[0.65rem] text-[#666666]">
                           {item.size && `${item.size}`}
                           {item.size && item.color && " / "}
                           {item.color && `${item.color}`}
                         </p>
-                        <p className="text-muted-foreground">Qty: {item.quantity}</p>
+                        <p className="text-[0.65rem] text-[#666666]">Qty: {item.quantity}</p>
                       </div>
-                      <p className="text-sm">৳{(item.price * item.quantity).toFixed(0)}</p>
+                      <p className="text-[0.75rem] text-[#181818]">৳{(item.price * item.quantity).toFixed(0)}</p>
                     </div>
                   ))}
                 </div>
 
-                <div className="space-y-3 py-6 border-y border-border">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Subtotal</span>
-                    <span>৳{subtotal.toFixed(0)}</span>
+                <div className="space-y-3 py-6 border-y border-[#e5e5e5]">
+                  <div className="flex justify-between text-[0.75rem]">
+                    <span className="text-[#666666]">Subtotal</span>
+                    <span className="text-[#181818]">৳{subtotal.toFixed(0)}</span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Shipping</span>
-                    <span>{shippingFee === 0 ? "Free" : `৳${shippingFee}`}</span>
+                  <div className="flex justify-between text-[0.75rem]">
+                    <span className="text-[#666666]">Shipping</span>
+                    <span className="text-[#181818]">{shippingFee === 0 ? "Free" : `৳${shippingFee}`}</span>
                   </div>
                 </div>
 
-                <div className="flex justify-between text-lg font-serif">
-                  <span>Total</span>
-                  <span>৳{total.toFixed(0)}</span>
+                <div className="flex justify-between text-[0.875rem]">
+                  <span className="uppercase tracking-[0.1em] text-[#181818]">Total</span>
+                  <span className="text-[#181818]">৳{total.toFixed(0)}</span>
                 </div>
 
                 <Button
                   type="submit"
-                  className="w-full py-6 text-xs tracking-widest uppercase bg-foreground hover:bg-foreground/90"
+                  className="w-full h-12 text-[0.65rem] tracking-[0.2em] uppercase bg-[#181818] hover:bg-[#181818]/90 text-white rounded-none"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
@@ -497,8 +497,8 @@ const Checkout = () => {
                   )}
                 </Button>
 
-                <p className="text-xs text-muted-foreground text-center">
-                  By placing this order, you agree to our terms and conditions
+                <p className="text-[0.65rem] text-[#666666] text-center">
+                  By placing this order, you agree to our terms
                 </p>
               </div>
             </div>

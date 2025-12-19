@@ -87,13 +87,14 @@ const ProductDetail = () => {
     return (
       <div className="min-h-screen bg-background">
         <Navbar cartCount={cartCount} />
-        <div className="container mx-auto px-6 pt-24 pb-16">
-          <div className="animate-pulse grid md:grid-cols-2 gap-12">
-            <div className="bg-stone aspect-[3/4]" />
-            <div className="space-y-6">
-              <div className="h-8 bg-stone w-3/4" />
-              <div className="h-6 bg-stone w-1/4" />
-              <div className="h-32 bg-stone" />
+        <div className="w-full px-4 md:px-6 lg:px-8 pt-16 pb-16">
+          <div className="animate-pulse grid md:grid-cols-2 gap-0.5">
+            <div className="bg-neutral-100 aspect-[3/4]" />
+            <div className="p-6 md:p-8 space-y-6">
+              <div className="h-4 bg-neutral-100 w-1/4" />
+              <div className="h-6 bg-neutral-100 w-3/4" />
+              <div className="h-4 bg-neutral-100 w-1/4" />
+              <div className="h-32 bg-neutral-100" />
             </div>
           </div>
         </div>
@@ -107,11 +108,13 @@ const ProductDetail = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar cartCount={cartCount} />
 
-      <main className="flex-1 container mx-auto px-6 pt-24 pb-16">
-        <div className="grid md:grid-cols-2 gap-12 lg:gap-20">
+      <main className="flex-1 pt-12">
+        {/* Product Grid - Edge to edge */}
+        <div className="grid md:grid-cols-2 gap-0.5">
           {/* Product Images */}
-          <div className="fade-in space-y-4">
-            <div className="relative overflow-hidden bg-stone aspect-[3/4]">
+          <div className="relative bg-neutral-100">
+            {/* Main Image */}
+            <div className="relative aspect-[3/4] md:aspect-auto md:h-[calc(100vh-48px)] overflow-hidden">
               <img
                 src={product.images[selectedImageIndex]}
                 alt={product.name}
@@ -121,61 +124,73 @@ const ProductDetail = () => {
                 <>
                   <button
                     onClick={() => setSelectedImageIndex((prev) => (prev === 0 ? product.images.length - 1 : prev - 1))}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-background/80 hover:bg-background transition-colors"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 p-2 bg-white/90 hover:bg-white transition-colors"
                   >
-                    <ChevronLeft className="h-5 w-5" />
+                    <ChevronLeft className="h-4 w-4 text-[#181818]" />
                   </button>
                   <button
                     onClick={() => setSelectedImageIndex((prev) => (prev === product.images.length - 1 ? 0 : prev + 1))}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-background/80 hover:bg-background transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-white/90 hover:bg-white transition-colors"
                   >
-                    <ChevronRight className="h-5 w-5" />
+                    <ChevronRight className="h-4 w-4 text-[#181818]" />
                   </button>
                 </>
               )}
             </div>
+
+            {/* Thumbnail Strip */}
             {product.images.length > 1 && (
-              <div className="flex gap-2">
-                {product.images.map((img, index) => (
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                {product.images.map((_, index) => (
                   <button
                     key={index}
                     onClick={() => setSelectedImageIndex(index)}
-                    className={`w-20 h-24 bg-stone overflow-hidden transition-opacity ${selectedImageIndex === index ? 'ring-1 ring-foreground' : 'opacity-60 hover:opacity-100'
+                    className={`w-2 h-2 rounded-full transition-all ${selectedImageIndex === index ? 'bg-[#181818]' : 'bg-[#181818]/30'
                       }`}
-                  >
-                    <img src={img} alt="" className="w-full h-full object-cover" />
-                  </button>
+                  />
                 ))}
               </div>
             )}
           </div>
 
           {/* Product Info */}
-          <div className="space-y-8 fade-in">
-            <div>
-              <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-4">
-                {product.category}
-              </p>
-              <h1 className="text-4xl md:text-5xl font-serif mb-4">{product.name}</h1>
-              <p className="text-2xl">${product.price.toFixed(2)}</p>
-            </div>
+          <div className="p-6 md:p-8 lg:p-12 flex flex-col justify-center">
+            {/* Category */}
+            <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#666666] mb-3">
+              {product.category}
+            </p>
 
+            {/* Name */}
+            <h1 className="text-[1rem] md:text-[1.25rem] uppercase tracking-[0.1em] font-normal text-[#181818] mb-3">
+              {product.name}
+            </h1>
+
+            {/* Price */}
+            <p className="text-[0.875rem] tracking-[0.05em] text-[#181818] mb-6">
+              ${product.price.toFixed(2)}
+            </p>
+
+            {/* Description */}
             {product.description && (
-              <p className="leading-relaxed text-muted-foreground">{product.description}</p>
+              <p className="text-[0.75rem] leading-relaxed text-[#666666] mb-8">
+                {product.description}
+              </p>
             )}
 
             {/* Size Selection */}
             {product.sizes && product.sizes.length > 0 && (
-              <div>
-                <label className="block text-xs tracking-[0.2em] uppercase mb-4">Size</label>
-                <div className="flex gap-3">
+              <div className="mb-6">
+                <label className="block text-[0.65rem] tracking-[0.2em] uppercase text-[#181818] mb-3">
+                  Size
+                </label>
+                <div className="flex flex-wrap gap-2">
                   {product.sizes.map((size) => (
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}
-                      className={`px-6 py-3 text-sm transition-all ${selectedSize === size
-                        ? "bg-foreground text-background"
-                        : "border border-border hover:border-foreground"
+                      className={`px-4 py-2 text-[0.65rem] uppercase tracking-[0.1em] transition-all ${selectedSize === size
+                          ? "bg-[#181818] text-white"
+                          : "border border-[#e5e5e5] text-[#181818] hover:border-[#181818]"
                         }`}
                     >
                       {size}
@@ -187,16 +202,18 @@ const ProductDetail = () => {
 
             {/* Color Selection */}
             {product.colors && product.colors.length > 0 && (
-              <div>
-                <label className="block text-xs tracking-[0.2em] uppercase mb-4">Color</label>
-                <div className="flex gap-3">
+              <div className="mb-8">
+                <label className="block text-[0.65rem] tracking-[0.2em] uppercase text-[#181818] mb-3">
+                  Color
+                </label>
+                <div className="flex flex-wrap gap-2">
                   {product.colors.map((color) => (
                     <button
                       key={color}
                       onClick={() => setSelectedColor(color)}
-                      className={`px-6 py-3 text-sm transition-all ${selectedColor === color
-                        ? "bg-foreground text-background"
-                        : "border border-border hover:border-foreground"
+                      className={`px-4 py-2 text-[0.65rem] uppercase tracking-[0.1em] transition-all ${selectedColor === color
+                          ? "bg-[#181818] text-white"
+                          : "border border-[#e5e5e5] text-[#181818] hover:border-[#181818]"
                         }`}
                     >
                       {color}
@@ -207,31 +224,39 @@ const ProductDetail = () => {
             )}
 
             {/* Add to Cart & Wishlist */}
-            <div className="flex gap-3">
+            <div className="flex gap-2 mb-8">
               <Button
                 onClick={handleAddToCart}
-                className="flex-1 py-6 text-xs tracking-widest uppercase bg-foreground hover:bg-foreground/90"
+                className="flex-1 h-12 text-[0.65rem] tracking-[0.2em] uppercase bg-[#181818] hover:bg-[#181818]/90 text-white rounded-none"
                 disabled={product.stock === 0}
               >
-                {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
+                {product.stock === 0 ? "Out of Stock" : "Add to Bag"}
               </Button>
-              <WishlistButton productId={product.id} variant="icon" size="lg" className="px-6" />
+              <WishlistButton
+                productId={product.id}
+                variant="icon"
+                size="lg"
+                className="h-12 w-12 border border-[#e5e5e5] rounded-none hover:border-[#181818]"
+              />
             </div>
 
             {/* Product Details */}
-            <div className="pt-8 border-t border-border space-y-4 text-sm text-muted-foreground">
-              <p>Complimentary shipping on orders over $200</p>
-              <p>Free returns within 30 days</p>
-              <p>Handcrafted with premium materials</p>
+            <div className="pt-6 border-t border-[#e5e5e5] space-y-2">
+              <p className="text-[0.65rem] tracking-[0.1em] uppercase text-[#666666]">
+                Free shipping on orders over $200
+              </p>
+              <p className="text-[0.65rem] tracking-[0.1em] uppercase text-[#666666]">
+                Free returns within 30 days
+              </p>
             </div>
           </div>
         </div>
-      </main>
 
-      {/* Reviews Section */}
-      <div className="container mx-auto px-6 lg:px-8">
-        <ProductReviews productId={product.id} productName={product.name} />
-      </div>
+        {/* Reviews Section */}
+        <div className="w-full px-4 md:px-6 lg:px-8 py-16">
+          <ProductReviews productId={product.id} productName={product.name} />
+        </div>
+      </main>
 
       <Footer />
     </div>

@@ -8,8 +8,7 @@ import { PageBlocks } from '@/components/PageBlocks';
 import { Button } from '@/components/ui/button';
 import { addToCart, getCart, getCartCount } from '@/lib/cart';
 import { toast } from 'sonner';
-import { Heart, ShoppingCart, Trash2, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Heart, Loader2, X } from 'lucide-react';
 
 const Wishlist = () => {
     const { items, isLoading, removeFromWishlist } = useWishlist();
@@ -26,16 +25,16 @@ const Wishlist = () => {
             image,
         });
         setCartCount(getCartCount(getCart()));
-        toast.success('Added to cart');
+        toast.success('Added to bag');
     };
 
     if (isLoading) {
         return (
             <div className="min-h-screen bg-background flex flex-col">
                 <Navbar cartCount={cartCount} />
-                <main className="flex-1 container mx-auto px-6 pt-24 pb-16">
+                <main className="flex-1 w-full px-4 md:px-6 lg:px-8 pt-20 pb-16">
                     <div className="flex items-center justify-center h-64">
-                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                        <Loader2 className="h-6 w-6 animate-spin text-[#666666]" />
                     </div>
                 </main>
                 <Footer />
@@ -52,34 +51,35 @@ const Wishlist = () => {
                 <PageBlocks blocks={pageData.blocks} position="top" />
             )}
 
-            <main className="flex-1 container mx-auto px-6 pt-24 pb-16">
-                {/* Header - only show if no page builder blocks */}
+            <main className="flex-1 w-full px-4 md:px-6 lg:px-8 pt-20 pb-16">
+                {/* Header */}
                 {(!pageData?.blocks || pageData.blocks.length === 0) && (
-                    <div className="mb-8">
-                        <h1 className="text-3xl font-serif tracking-wide mb-2">My Wishlist</h1>
-                        <p className="text-muted-foreground">
-                            {items.length} {items.length === 1 ? 'item' : 'items'} saved
+                    <div className="mb-12">
+                        <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#666666] mb-2">
+                            Saved Items
                         </p>
+                        <h1 className="text-[1rem] md:text-[1.25rem] uppercase tracking-[0.1em] font-normal text-[#181818]">
+                            Wishlist ({items.length})
+                        </h1>
                     </div>
                 )}
 
                 {/* Empty State */}
                 {items.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-16 text-center">
-                        <div className="w-20 h-20 rounded-full bg-muted/50 flex items-center justify-center mb-4">
-                            <Heart className="h-10 w-10 text-muted-foreground" />
-                        </div>
-                        <h2 className="text-xl font-medium mb-2">Your wishlist is empty</h2>
-                        <p className="text-muted-foreground mb-6 max-w-md">
-                            Save your favorite products to your wishlist and come back to them later.
+                    <div className="flex flex-col items-center justify-center py-20 text-center">
+                        <Heart className="h-12 w-12 text-[#e5e5e5] mb-6" />
+                        <p className="text-[0.875rem] text-[#666666] mb-6">
+                            Your wishlist is empty
                         </p>
-                        <Button asChild>
-                            <Link to="/products">Browse Products</Link>
-                        </Button>
+                        <Link to="/products">
+                            <Button className="h-12 px-8 text-[0.65rem] tracking-[0.2em] uppercase bg-[#181818] hover:bg-[#181818]/90 text-white rounded-none">
+                                Continue Shopping
+                            </Button>
+                        </Link>
                     </div>
                 ) : (
                     /* Wishlist Grid */
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-0.5">
                         {items.map((item) => {
                             const product = item.product;
                             if (!product) return null;
@@ -87,19 +87,21 @@ const Wishlist = () => {
                             return (
                                 <div
                                     key={item.id}
-                                    className="group relative bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all"
+                                    className="group relative bg-neutral-100"
                                 >
                                     {/* Product Image */}
                                     <Link to="/product/$id" params={{ id: product.id }}>
-                                        <div className="relative aspect-[3/4] bg-muted overflow-hidden">
+                                        <div className="relative aspect-[3/4] overflow-hidden">
                                             <img
                                                 src={product.images[0]}
                                                 alt={product.name}
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                             />
                                             {product.stock === 0 && (
-                                                <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                                                    <span className="text-white font-medium">Out of Stock</span>
+                                                <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
+                                                    <span className="text-[0.65rem] uppercase tracking-[0.1em] text-[#666666]">
+                                                        Out of Stock
+                                                    </span>
                                                 </div>
                                             )}
                                         </div>
@@ -108,24 +110,22 @@ const Wishlist = () => {
                                     {/* Remove Button */}
                                     <button
                                         onClick={() => removeFromWishlist(product.id)}
-                                        className={cn(
-                                            "absolute top-3 right-3 p-2 rounded-full bg-background/90 backdrop-blur-sm",
-                                            "hover:bg-background transition-all",
-                                            "opacity-0 group-hover:opacity-100"
-                                        )}
+                                        className="absolute top-2 right-2 p-2 bg-white/90 hover:bg-white transition-all"
                                         aria-label="Remove from wishlist"
                                     >
-                                        <Trash2 className="h-4 w-4 text-red-500" />
+                                        <X className="h-4 w-4 text-[#181818]" />
                                     </button>
 
                                     {/* Product Info */}
-                                    <div className="p-4">
+                                    <div className="p-3">
                                         <Link to="/product/$id" params={{ id: product.id }}>
-                                            <h3 className="font-medium truncate mb-1 hover:text-accent transition-colors">
+                                            <h3 className="text-[0.75rem] uppercase tracking-[0.05em] text-[#181818] truncate mb-1">
                                                 {product.name}
                                             </h3>
                                         </Link>
-                                        <p className="text-lg font-semibold mb-3">${product.price.toFixed(2)}</p>
+                                        <p className="text-[0.75rem] text-[#666666] mb-3">
+                                            ${product.price.toFixed(2)}
+                                        </p>
 
                                         {/* Add to Cart Button */}
                                         <Button
@@ -136,11 +136,9 @@ const Wishlist = () => {
                                                 product.images[0]
                                             )}
                                             disabled={product.stock === 0}
-                                            className="w-full"
-                                            size="sm"
+                                            className="w-full h-10 text-[0.6rem] tracking-[0.15em] uppercase bg-[#181818] hover:bg-[#181818]/90 text-white rounded-none"
                                         >
-                                            <ShoppingCart className="h-4 w-4 mr-2" />
-                                            {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+                                            {product.stock === 0 ? 'Sold Out' : 'Add to Bag'}
                                         </Button>
                                     </div>
                                 </div>

@@ -57,77 +57,113 @@ const Cart = () => {
         <PageBlocks blocks={pageData.blocks} position="top" />
       )}
 
-      <main className="flex-1 container mx-auto px-6 py-16 pt-24">
-        {/* Only show default header if no page builder blocks */}
+      <main className="flex-1 w-full px-4 md:px-6 lg:px-8 py-16 pt-20">
+        {/* Header */}
         {(!pageData?.blocks || pageData.blocks.length === 0) && (
-          <div className="mb-16 fade-in">
-            <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-4">Your Selection</p>
-            <h1 className="text-5xl md:text-6xl font-serif">Shopping Cart</h1>
+          <div className="mb-12">
+            <p className="text-[0.65rem] tracking-[0.2em] uppercase text-[#666666] mb-2">
+              Your Bag
+            </p>
+            <h1 className="text-[1rem] md:text-[1.25rem] uppercase tracking-[0.1em] font-normal text-[#181818]">
+              Shopping Cart ({cartCount} {cartCount === 1 ? 'item' : 'items'})
+            </h1>
           </div>
         )}
 
         {cart.length === 0 ? (
-          <div className="text-center py-20 fade-in">
-            <p className="text-muted-foreground mb-8">Your cart is empty</p>
+          <div className="text-center py-20">
+            <p className="text-[0.75rem] text-[#666666] mb-8">Your cart is empty</p>
             <Link to="/products">
-              <Button className="bg-foreground hover:bg-foreground/90 px-8 py-6 text-xs tracking-widest uppercase">
+              <Button className="h-12 px-8 text-[0.65rem] tracking-[0.2em] uppercase bg-[#181818] hover:bg-[#181818]/90 text-white rounded-none">
                 Continue Shopping
               </Button>
             </Link>
           </div>
         ) : (
-          <div className="grid lg:grid-cols-3 gap-12">
+          <div className="grid lg:grid-cols-3 gap-8 lg:gap-12">
             {/* Cart Items */}
-            <div className="lg:col-span-2 space-y-0">
-              {cart.map((item, index) => (
+            <div className="lg:col-span-2">
+              {/* Table Header - Desktop */}
+              <div className="hidden md:grid grid-cols-12 gap-4 pb-4 border-b border-[#e5e5e5] text-[0.65rem] tracking-[0.15em] uppercase text-[#666666]">
+                <div className="col-span-6">Product</div>
+                <div className="col-span-2 text-center">Quantity</div>
+                <div className="col-span-2 text-right">Price</div>
+                <div className="col-span-2 text-right">Total</div>
+              </div>
+
+              {/* Cart Items */}
+              {cart.map((item) => (
                 <div
                   key={item.id}
-                  className={`flex gap-6 py-8 fade-in ${index !== cart.length - 1 ? 'border-b border-border' : ''}`}
+                  className="grid grid-cols-12 gap-4 py-6 border-b border-[#e5e5e5] items-center"
                 >
-                  <div className="w-28 h-36 bg-stone flex-shrink-0">
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-
-                  <div className="flex-1 space-y-4">
-                    <div className="flex justify-between">
+                  {/* Product Info */}
+                  <div className="col-span-12 md:col-span-6 flex gap-4">
+                    <div className="w-20 h-24 bg-neutral-100 flex-shrink-0">
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 flex flex-col justify-between py-1">
                       <div>
-                        <h3 className="font-serif text-xl mb-2">{item.name}</h3>
-                        <div className="flex gap-4 text-sm text-muted-foreground">
+                        <h3 className="text-[0.75rem] uppercase tracking-[0.05em] text-[#181818] mb-1">
+                          {item.name}
+                        </h3>
+                        <div className="flex gap-3 text-[0.65rem] text-[#666666]">
                           {item.size && <span>Size: {item.size}</span>}
                           {item.color && <span>Color: {item.color}</span>}
                         </div>
                       </div>
                       <button
                         onClick={() => handleRemove(item.id)}
-                        className="text-muted-foreground hover:text-foreground transition-colors h-fit"
+                        className="text-[0.65rem] tracking-[0.1em] uppercase text-[#666666] hover:text-[#181818] transition-colors self-start md:hidden"
                       >
-                        <X className="h-5 w-5" />
+                        Remove
                       </button>
                     </div>
+                  </div>
 
-                    <div className="flex justify-between items-center pt-2">
-                      <div className="flex items-center border border-border">
-                        <button
-                          onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
-                          className="p-3 hover:bg-stone transition-colors"
-                        >
-                          <Minus className="h-3 w-3" />
-                        </button>
-                        <span className="w-12 text-center text-sm">{item.quantity}</span>
-                        <button
-                          onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                          className="p-3 hover:bg-stone transition-colors"
-                        >
-                          <Plus className="h-3 w-3" />
-                        </button>
-                      </div>
-
-                      <p className="text-lg font-serif">৳{(item.price * item.quantity).toFixed(0)}</p>
+                  {/* Quantity */}
+                  <div className="col-span-4 md:col-span-2 flex justify-center">
+                    <div className="flex items-center border border-[#e5e5e5]">
+                      <button
+                        onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+                        className="p-2 hover:bg-neutral-100 transition-colors"
+                      >
+                        <Minus className="h-3 w-3 text-[#181818]" />
+                      </button>
+                      <span className="w-8 text-center text-[0.75rem] text-[#181818]">
+                        {item.quantity}
+                      </span>
+                      <button
+                        onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+                        className="p-2 hover:bg-neutral-100 transition-colors"
+                      >
+                        <Plus className="h-3 w-3 text-[#181818]" />
+                      </button>
                     </div>
+                  </div>
+
+                  {/* Price */}
+                  <div className="col-span-4 md:col-span-2 text-right">
+                    <span className="text-[0.75rem] text-[#666666]">
+                      ৳{item.price.toFixed(0)}
+                    </span>
+                  </div>
+
+                  {/* Total */}
+                  <div className="col-span-4 md:col-span-2 text-right flex items-center justify-end gap-4">
+                    <span className="text-[0.75rem] text-[#181818]">
+                      ৳{(item.price * item.quantity).toFixed(0)}
+                    </span>
+                    <button
+                      onClick={() => handleRemove(item.id)}
+                      className="hidden md:block text-[#666666] hover:text-[#181818] transition-colors"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
                   </div>
                 </div>
               ))}
@@ -135,34 +171,36 @@ const Cart = () => {
 
             {/* Order Summary */}
             <div className="lg:col-span-1">
-              <div className="bg-stone p-8 space-y-6 sticky top-24 fade-in">
-                <h2 className="text-xl font-serif">Order Summary</h2>
+              <div className="bg-neutral-50 p-6 sticky top-16">
+                <h2 className="text-[0.75rem] uppercase tracking-[0.15em] text-[#181818] mb-6">
+                  Order Summary
+                </h2>
 
-                <div className="space-y-4 py-6 border-y border-border">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Subtotal</span>
-                    <span>৳{total.toFixed(0)}</span>
+                <div className="space-y-3 pb-6 border-b border-[#e5e5e5]">
+                  <div className="flex justify-between text-[0.75rem]">
+                    <span className="text-[#666666]">Subtotal</span>
+                    <span className="text-[#181818]">৳{total.toFixed(0)}</span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Shipping</span>
-                    <span className="text-muted-foreground">Calculated at checkout</span>
+                  <div className="flex justify-between text-[0.75rem]">
+                    <span className="text-[#666666]">Shipping</span>
+                    <span className="text-[#666666]">Calculated at checkout</span>
                   </div>
                 </div>
 
-                <div className="flex justify-between text-lg font-serif">
-                  <span>Subtotal</span>
-                  <span>৳{total.toFixed(0)}</span>
+                <div className="flex justify-between py-6 text-[0.875rem]">
+                  <span className="uppercase tracking-[0.1em] text-[#181818]">Total</span>
+                  <span className="text-[#181818]">৳{total.toFixed(0)}</span>
                 </div>
 
                 <Button
                   onClick={() => navigate({ to: "/checkout" })}
-                  className="w-full py-6 text-xs tracking-widest uppercase bg-foreground hover:bg-foreground/90"
+                  className="w-full h-12 text-[0.65rem] tracking-[0.2em] uppercase bg-[#181818] hover:bg-[#181818]/90 text-white rounded-none"
                 >
-                  Proceed to Checkout
+                  Checkout
                 </Button>
 
-                <p className="text-xs text-muted-foreground text-center">
-                  Shipping calculated based on your location
+                <p className="text-[0.65rem] text-[#666666] text-center mt-4">
+                  Taxes and shipping calculated at checkout
                 </p>
               </div>
             </div>

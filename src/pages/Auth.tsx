@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, Link } from '@tanstack/react-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 
@@ -80,83 +78,106 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-6">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-12">
-          <h1 className="text-3xl font-serif tracking-wide text-foreground">{settings?.store_name?.toUpperCase() || 'ATELIER'}</h1>
-          <p className="text-muted-foreground mt-2 text-sm tracking-wide">
-            {isLogin ? 'Welcome back' : 'Create your account'}
-          </p>
-        </div>
+    <div className="min-h-screen bg-background flex">
+      {/* Left Panel - Form */}
+      <div className="flex-1 flex items-center justify-center px-4 md:px-8">
+        <div className="w-full max-w-sm">
+          {/* Logo */}
+          <div className="mb-12">
+            <Link to="/" className="text-[1rem] tracking-[0.15em] uppercase text-[#181818]">
+              {settings?.store_name?.toUpperCase() || 'BRAND'}
+            </Link>
+          </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {!isLogin && (
+          {/* Title */}
+          <div className="mb-8">
+            <h1 className="text-[1.25rem] uppercase tracking-[0.1em] font-normal text-[#181818] mb-2">
+              {isLogin ? 'Sign In' : 'Create Account'}
+            </h1>
+            <p className="text-[0.75rem] text-[#666666]">
+              {isLogin ? 'Welcome back' : 'Join us for exclusive access'}
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {!isLogin && (
+              <div className="space-y-2">
+                <label className="block text-[0.65rem] tracking-[0.15em] uppercase text-[#181818]">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="w-full px-4 py-3 border border-[#e5e5e5] bg-transparent text-[0.875rem] text-[#181818] placeholder:text-[#999999] focus:border-[#181818] focus:outline-none transition-colors"
+                  placeholder="Your name"
+                />
+              </div>
+            )}
+
             <div className="space-y-2">
-              <Label htmlFor="fullName" className="text-xs tracking-widest uppercase">
-                Full Name
-              </Label>
-              <Input
-                id="fullName"
-                type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className="border-border bg-transparent"
-                placeholder="Your full name"
+              <label className="block text-[0.65rem] tracking-[0.15em] uppercase text-[#181818]">
+                Email
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-3 border border-[#e5e5e5] bg-transparent text-[0.875rem] text-[#181818] placeholder:text-[#999999] focus:border-[#181818] focus:outline-none transition-colors"
+                placeholder="your@email.com"
               />
+              {errors.email && (
+                <p className="text-[0.65rem] text-red-500">{errors.email}</p>
+              )}
             </div>
-          )}
 
-          <div className="space-y-2">
-            <Label htmlFor="email" className="text-xs tracking-widest uppercase">
-              Email
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="border-border bg-transparent"
-              placeholder="your@email.com"
-            />
-            {errors.email && (
-              <p className="text-destructive text-xs">{errors.email}</p>
-            )}
+            <div className="space-y-2">
+              <label className="block text-[0.65rem] tracking-[0.15em] uppercase text-[#181818]">
+                Password
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-3 border border-[#e5e5e5] bg-transparent text-[0.875rem] text-[#181818] placeholder:text-[#999999] focus:border-[#181818] focus:outline-none transition-colors"
+                placeholder="••••••••"
+              />
+              {errors.password && (
+                <p className="text-[0.65rem] text-red-500">{errors.password}</p>
+              )}
+            </div>
+
+            <Button
+              type="submit"
+              disabled={submitting}
+              className="w-full h-12 text-[0.65rem] tracking-[0.2em] uppercase bg-[#181818] hover:bg-[#181818]/90 text-white rounded-none mt-2"
+            >
+              {submitting ? 'Please wait...' : isLogin ? 'Sign In' : 'Create Account'}
+            </Button>
+          </form>
+
+          <div className="mt-8 pt-6 border-t border-[#e5e5e5]">
+            <button
+              onClick={() => setIsLogin(!isLogin)}
+              className="text-[0.75rem] text-[#666666] hover:text-[#181818] transition-colors"
+            >
+              {isLogin ? "Don't have an account? " : 'Already have an account? '}
+              <span className="underline underline-offset-4">
+                {isLogin ? 'Sign up' : 'Sign in'}
+              </span>
+            </button>
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="password" className="text-xs tracking-widest uppercase">
-              Password
-            </Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="border-border bg-transparent"
-              placeholder="••••••••"
-            />
-            {errors.password && (
-              <p className="text-destructive text-xs">{errors.password}</p>
-            )}
-          </div>
-
-          <Button
-            type="submit"
-            disabled={submitting}
-            className="w-full bg-charcoal text-cream hover:bg-charcoal/90 tracking-widest text-xs py-6"
-          >
-            {submitting ? 'Please wait...' : isLogin ? 'Sign In' : 'Create Account'}
-          </Button>
-        </form>
-
-        <div className="mt-8 text-center">
-          <button
-            onClick={() => setIsLogin(!isLogin)}
-            className="text-muted-foreground text-sm hover:text-foreground transition-colors"
-          >
-            {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
-          </button>
         </div>
+      </div>
+
+      {/* Right Panel - Image (Desktop only) */}
+      <div className="hidden lg:block w-1/2 bg-neutral-100">
+        <div
+          className="w-full h-full bg-cover bg-center"
+          style={{
+            backgroundImage: 'url(https://images.unsplash.com/photo-1558171813-4c088753af8f?w=1200&q=80)',
+          }}
+        />
       </div>
     </div>
   );
