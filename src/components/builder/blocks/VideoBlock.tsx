@@ -31,7 +31,7 @@ export function VideoBlock({ content }: { content: VideoBlockContent }) {
     if (!embedUrl && !content.url) {
         return (
             <section className="py-8">
-                <div className="container mx-auto px-6">
+                <div className="container mx-auto">
                     <div className="aspect-video bg-muted rounded-xl flex items-center justify-center border-2 border-dashed">
                         <div className="text-center text-muted-foreground">
                             <Play className="h-12 w-12 mx-auto mb-2 opacity-50" />
@@ -45,7 +45,7 @@ export function VideoBlock({ content }: { content: VideoBlockContent }) {
 
     return (
         <section className="py-8">
-            <div className="container mx-auto px-6">
+            <div className="container mx-auto">
                 {content.title && (
                     <h3 className="text-2xl font-serif mb-4 text-center">{content.title}</h3>
                 )}

@@ -179,7 +179,7 @@ export function CollectionGridBlock({ content, collectionId, collectionSlug }: C
     if (!collectionId && !collectionSlug) {
         return (
             <section
-                className={cn("container mx-auto px-6", getPaddingClass())}
+                className={cn("container mx-auto", getPaddingClass())}
                 style={{ backgroundColor: backgroundColor !== 'transparent' ? backgroundColor : undefined }}
             >
                 <div className="border-2 border-dashed border-muted-foreground/30 rounded-lg p-8 text-center">
@@ -194,7 +194,7 @@ export function CollectionGridBlock({ content, collectionId, collectionSlug }: C
 
     return (
         <section
-            className={cn("container mx-auto px-6", getPaddingClass())}
+            className={cn("container mx-auto", getPaddingClass())}
             style={{ backgroundColor: backgroundColor !== 'transparent' ? backgroundColor : undefined }}
         >
             {showProductCount && products.length > 0 && (

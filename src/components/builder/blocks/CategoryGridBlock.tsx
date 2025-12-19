@@ -145,7 +145,7 @@ export function CategoryGridBlock({ content }: { content: CategoryGridBlockConte
 
     return (
         <section className={getPaddingClass()}>
-            <div className="container mx-auto px-6">
+            <div className="container mx-auto">
                 {(content.title || content.subtitle) && (
                     <div className={cn("mb-10", getHeaderAlign())}>
                         {content.subtitle && (

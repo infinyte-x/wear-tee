@@ -90,7 +90,7 @@ export function NewsletterBlock({ content }: { content: any }) {
             )}
 
             <div className={cn(
-                "container mx-auto px-6 relative z-10",
+                "container mx-auto relative z-10",
                 centerAlign && "text-center"
             )}>
                 <div className={cn(

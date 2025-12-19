@@ -97,7 +97,7 @@ export function StatsBlock({ content }: { content: StatsBlockContent }) {
 
     return (
         <section ref={ref} className="py-16 bg-muted/30">
-            <div className="container mx-auto px-6">
+            <div className="container mx-auto">
                 {content.title && (
                     <h2 className="text-2xl md:text-3xl font-serif text-center mb-10">{content.title}</h2>
                 )}

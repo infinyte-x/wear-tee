@@ -54,7 +54,7 @@ export function GalleryBlock({ content }: { content: GalleryBlockContent }) {
 
     return (
         <section className="py-8">
-            <div className="container mx-auto px-6">
+            <div className="container mx-auto">
                 {content.title && (
                     <h2 className="text-3xl font-serif mb-8 text-center">{content.title}</h2>
                 )}

@@ -55,7 +55,7 @@ const Index = () => {
     return (
       <div className="min-h-screen bg-background flex flex-col" style={themeStyle}>
         <Navbar cartCount={cartCount} />
-        <main className="flex-1">
+        <main className="flex-1 pt-12">
           {blocks.map(block => (
             <BlockRenderer key={block.id} block={block} />
           ))}

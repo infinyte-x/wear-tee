@@ -137,7 +137,7 @@ export function ProductGridBlock({ content }: { content: any }) {
 
     return (
         <section
-            className={cn("container mx-auto px-6", getPaddingClass())}
+            className={cn("container mx-auto", getPaddingClass())}
             style={{ backgroundColor: backgroundColor !== 'transparent' ? backgroundColor : undefined }}
         >
             {content.title && (

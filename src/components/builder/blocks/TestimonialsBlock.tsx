@@ -35,7 +35,7 @@ export function TestimonialsBlock({ content }: { content: TestimonialsBlockConte
 
     return (
         <section className="py-16 bg-muted/30">
-            <div className="container mx-auto px-6">
+            <div className="container mx-auto">
                 {(content.title || content.subtitle) && (
                     <div className="text-center mb-12">
                         {content.title && (

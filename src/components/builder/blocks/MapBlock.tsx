@@ -39,7 +39,7 @@ export function MapBlock({ content }: { content: MapBlockContent }) {
 
     return (
         <section className="py-16">
-            <div className="container mx-auto px-6">
+            <div className="container mx-auto">
                 {content.title && (
                     <h2 className="text-2xl md:text-3xl font-serif text-center mb-10">{content.title}</h2>
                 )}

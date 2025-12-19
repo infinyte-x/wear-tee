@@ -73,7 +73,7 @@ export function CountdownBlock({ content }: { content: CountdownBlockContent }) 
 
     return (
         <section className="py-12 bg-gradient-to-r from-primary/5 to-primary/10">
-            <div className="container mx-auto px-6">
+            <div className="container mx-auto">
                 <div className="max-w-2xl mx-auto text-center space-y-6">
                     {content.title && (
                         <h2 className="text-xl md:text-2xl font-serif">{content.title}</h2>

@@ -38,7 +38,7 @@ export function SocialFeedBlock({ content }: { content: SocialFeedBlockContent }
 
     return (
         <section className="py-16">
-            <div className="container mx-auto px-6">
+            <div className="container mx-auto">
                 {(content.title || content.subtitle) && (
                     <div className="text-center mb-8">
                         {content.title && (

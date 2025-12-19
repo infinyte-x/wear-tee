@@ -35,6 +35,7 @@ const ProductDetail = () => {
   const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     fetchProduct();
     setCartCount(getCartCount(getCart()));
   }, [id]);
@@ -189,8 +190,8 @@ const ProductDetail = () => {
                       key={size}
                       onClick={() => setSelectedSize(size)}
                       className={`px-4 py-2 text-[0.65rem] uppercase tracking-[0.1em] transition-all ${selectedSize === size
-                          ? "bg-[#181818] text-white"
-                          : "border border-[#e5e5e5] text-[#181818] hover:border-[#181818]"
+                        ? "bg-[#181818] text-white"
+                        : "border border-[#e5e5e5] text-[#181818] hover:border-[#181818]"
                         }`}
                     >
                       {size}
@@ -212,8 +213,8 @@ const ProductDetail = () => {
                       key={color}
                       onClick={() => setSelectedColor(color)}
                       className={`px-4 py-2 text-[0.65rem] uppercase tracking-[0.1em] transition-all ${selectedColor === color
-                          ? "bg-[#181818] text-white"
-                          : "border border-[#e5e5e5] text-[#181818] hover:border-[#181818]"
+                        ? "bg-[#181818] text-white"
+                        : "border border-[#e5e5e5] text-[#181818] hover:border-[#181818]"
                         }`}
                     >
                       {color}

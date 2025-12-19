@@ -25,7 +25,7 @@ export function FAQBlock({ content }: { content: FAQBlockContent }) {
 
     return (
         <section className="py-16 bg-background">
-            <div className="container mx-auto px-6">
+            <div className="container mx-auto">
                 <div className="max-w-3xl mx-auto">
                     {(content.title || content.subtitle) && (
                         <div className="text-center mb-10">

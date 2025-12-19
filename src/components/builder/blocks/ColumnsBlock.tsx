@@ -118,7 +118,7 @@ export function ColumnsBlock({ content }: { content: ColumnsBlockContent }) {
             className={getPaddingClass()}
             style={{ backgroundColor: content.backgroundColor || undefined }}
         >
-            <div className="container mx-auto px-6">
+            <div className="container mx-auto">
                 {(content.sectionTitle || content.sectionSubtitle) && (
                     <div className={cn("mb-10", textAlign === 'center' && "text-center")}>
                         {content.sectionSubtitle && (

@@ -62,7 +62,7 @@ const Navbar = ({ cartCount = 0 }: NavbarProps) => {
   const navClasses = cn(
     "fixed left-0 right-0 z-50 transition-all duration-300",
     shouldShowAnnouncement ? "top-[42px]" : "top-0",
-    "bg-background border-b border-border/30"
+    "bg-white/80 backdrop-blur-md border-b border-border/20"
   );
 
   const handleSignOut = async () => {
@@ -95,13 +95,13 @@ const Navbar = ({ cartCount = 0 }: NavbarProps) => {
     "text-[0.75rem] uppercase tracking-[0.15em] font-medium",
     "text-[#181818] transition-all duration-200",
     "px-3 py-2",
-    "hover:bg-[#FEFEFE] hover:text-[#181818]"
+    "hover:bg-black/5"
   );
 
-  // Icon button styles - smaller for compact navbar
+  // Icon button styles
   const iconButtonClasses = cn(
     "h-8 w-8 rounded-none transition-all duration-200",
-    "text-[#181818] hover:bg-[#FEFEFE] hover:text-[#181818]"
+    "text-[#181818] hover:bg-black/5"
   );
 
   return (
@@ -151,7 +151,7 @@ const Navbar = ({ cartCount = 0 }: NavbarProps) => {
           ════════════════════════════════════════════════════════════ */}
           <Link
             to="/"
-            className="absolute left-1/2 -translate-x-1/2 text-lg md:text-xl font-serif tracking-[0.15em] text-[#181818] hover:opacity-80 transition-opacity uppercase"
+            className="absolute left-1/2 -translate-x-1/2 text-lg md:text-xl font-serif tracking-[0.15em] text-[#181818] hover:opacity-80 transition-all duration-200 uppercase"
           >
             {settings?.store_name?.toUpperCase() || 'BRAND'}
           </Link>

@@ -36,7 +36,7 @@ export function LogoCarouselBlock({ content }: { content: LogoCarouselBlockConte
 
     return (
         <section className="py-12 overflow-hidden">
-            <div className="container mx-auto px-6">
+            <div className="container mx-auto">
                 {content.title && (
                     <h2 className="text-lg font-medium text-center text-muted-foreground mb-8">
                         {content.title}
