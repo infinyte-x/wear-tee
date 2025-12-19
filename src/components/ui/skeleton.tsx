@@ -6,11 +6,11 @@ const skeletonVariants = cva(
   {
     variants: {
       variant: {
-        default: "rounded-md",
-        card: "rounded-lg",
-        text: "rounded h-4",
-        avatar: "rounded-full",
-        button: "rounded-md h-10",
+        default: "",
+        card: "",
+        text: "h-4",
+        avatar: "",
+        button: "h-10",
       },
     },
     defaultVariants: {

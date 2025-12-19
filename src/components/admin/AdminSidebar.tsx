@@ -127,7 +127,7 @@ const AdminSidebar = ({
         to={to}
         onClick={handleNavClick}
         className={cn(
-          "relative flex items-center gap-3 px-4 py-2.5 text-sm transition-all duration-300 rounded-lg group",
+          "relative flex items-center gap-3 px-4 py-2.5 text-sm transition-all duration-300 rounded-none group",
           active
             ? "bg-accent/20 text-white shadow-sm"
             : "text-white/60 hover:bg-white/5 hover:text-white",
@@ -187,7 +187,7 @@ const AdminSidebar = ({
             <button
               onClick={() => toggleSection(id)}
               className={cn(
-                "flex items-center justify-center w-full px-2 py-3 text-sm rounded-lg transition-all duration-300 group",
+                "flex items-center justify-center w-full px-2 py-3 text-sm rounded-none transition-all duration-300 group",
                 isOpen
                   ? "bg-white/5 text-white"
                   : "text-white/60 hover:bg-white/5 hover:text-white"
@@ -209,7 +209,7 @@ const AdminSidebar = ({
     return (
       <Collapsible open={isOpen} onOpenChange={() => toggleSection(id)} className="space-y-1">
         <CollapsibleTrigger className={cn(
-          "flex items-center justify-between w-full px-4 py-3 text-sm tracking-wide rounded-lg transition-all duration-300 group",
+          "flex items-center justify-between w-full px-4 py-3 text-sm tracking-wide rounded-none transition-all duration-300 group",
           isOpen
             ? "bg-white/5 text-white"
             : "text-white/60 hover:bg-white/5 hover:text-white"
@@ -257,7 +257,7 @@ const AdminSidebar = ({
                 collapsed && !isMobile && "justify-center"
               )}
             >
-              <div className="p-2 bg-accent/20 rounded-lg group-hover:bg-accent/30 transition-colors duration-300">
+              <div className="p-2 bg-accent/20 rounded-none group-hover:bg-accent/30 transition-colors duration-300">
                 <Building2 className="h-5 w-5 text-accent" />
               </div>
               {(!collapsed || isMobile) && <span className="text-white">{settings?.store_name || 'BrandLaunch'}</span>}
@@ -288,7 +288,7 @@ const AdminSidebar = ({
           <button
             onClick={onToggleCollapse}
             className={cn(
-              "relative flex items-center gap-3 px-4 py-2.5 text-sm transition-all duration-300 rounded-lg group w-full",
+              "relative flex items-center gap-3 px-4 py-2.5 text-sm transition-all duration-300 rounded-none group w-full",
               "text-white/60 hover:bg-white/5 hover:text-white",
               collapsed && "justify-center px-2"
             )}
@@ -347,7 +347,7 @@ const AdminSidebar = ({
             variant="ghost"
             onClick={signOut}
             className={cn(
-              "w-full text-white/60 hover:text-red-400 hover:bg-red-500/10 px-3 py-2.5 rounded-lg transition-all duration-300 group",
+              "w-full text-white/60 hover:text-red-400 hover:bg-red-500/10 px-3 py-2.5 rounded-none transition-all duration-300 group",
               collapsed && !isMobile ? "justify-center" : "justify-start"
             )}
           >

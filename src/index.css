@@ -41,7 +41,7 @@ All colors MUST be HSL.
     --input: 214 32% 91%;
     --ring: 239 84% 67%;
 
-    --radius: 0.5rem;
+    --radius: 0;
 
     /* Custom design tokens */
     --stone: 210 40% 96%;
@@ -301,6 +301,7 @@ All colors MUST be HSL.
     0% {
       transform: translateX(0);
     }
+
     100% {
       transform: translateX(-100%);
     }
@@ -311,9 +312,12 @@ All colors MUST be HSL.
   }
 
   @keyframes bounce-subtle {
-    0%, 100% {
+
+    0%,
+    100% {
       transform: translateY(0);
     }
+
     50% {
       transform: translateY(-3px);
     }
@@ -328,6 +332,7 @@ All colors MUST be HSL.
       opacity: 0;
       transform: translateY(-100%);
     }
+
     100% {
       opacity: 1;
       transform: translateY(0);
