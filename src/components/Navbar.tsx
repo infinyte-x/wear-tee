@@ -2,6 +2,15 @@ import { ShoppingBag, Menu, Search, User, Heart, Bell } from "lucide-react";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
@@ -70,11 +79,23 @@ const Navbar = ({ cartCount = 0 }: NavbarProps) => {
     navigate({ to: '/' });
   };
 
-  // Desktop nav links - fixed structure
-  const desktopNavLinks = [
-    { to: "/products/men", label: "Men" },
-    { to: "/products/women", label: "Women" },
-    { to: "/products", label: "Shop" },
+  // Desktop nav categories with subcategories
+  const menCategories = [
+    { title: "T-Shirts", href: "/products/men?category=t-shirts", description: "Classic and graphic tees" },
+    { title: "Hoodies", href: "/products/men?category=hoodies", description: "Comfortable hooded sweatshirts" },
+    { title: "Jackets", href: "/products/men?category=jackets", description: "Outerwear for all seasons" },
+    { title: "Pants", href: "/products/men?category=pants", description: "Jeans, joggers & more" },
+    { title: "Accessories", href: "/products/men?category=accessories", description: "Hats, bags & extras" },
+    { title: "View All", href: "/products/men", description: "Browse entire collection" },
+  ];
+
+  const womenCategories = [
+    { title: "Tops", href: "/products/women?category=tops", description: "Blouses, tees & tanks" },
+    { title: "Dresses", href: "/products/women?category=dresses", description: "Casual to formal styles" },
+    { title: "Hoodies", href: "/products/women?category=hoodies", description: "Cozy sweatshirts" },
+    { title: "Bottoms", href: "/products/women?category=bottoms", description: "Skirts, pants & shorts" },
+    { title: "Accessories", href: "/products/women?category=accessories", description: "Jewelry, bags & more" },
+    { title: "View All", href: "/products/women", description: "Browse entire collection" },
   ];
 
   // Mobile menu links (full navigation)
@@ -134,16 +155,88 @@ const Navbar = ({ cartCount = 0 }: NavbarProps) => {
           {/* ════════════════════════════════════════════════════════════
               DESKTOP: Left Navigation Links (Men, Woman, Shop)
           ════════════════════════════════════════════════════════════ */}
-          <div className="hidden md:flex items-center gap-1">
-            {desktopNavLinks.map((link) => (
-              <Link
-                key={link.label}
-                to={link.to}
-                className={navLinkClasses}
-              >
-                {link.label}
-              </Link>
-            ))}
+          <div className="hidden md:flex items-center">
+            <NavigationMenu>
+              <NavigationMenuList className="gap-0">
+                {/* Men Dropdown */}
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger className={cn(
+                    "text-[0.75rem] uppercase tracking-[0.15em] font-medium",
+                    "bg-transparent hover:bg-black/5 data-[state=open]:bg-black/5",
+                    "text-[#181818] h-auto px-3 py-2 rounded-none"
+                  )}>
+                    Men
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                      {menCategories.map((category) => (
+                        <li key={category.title}>
+                          <NavigationMenuLink asChild>
+                            <Link
+                              to={category.href}
+                              className={cn(
+                                "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors",
+                                "hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                              )}
+                            >
+                              <div className="text-sm font-medium leading-none">{category.title}</div>
+                              <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                                {category.description}
+                              </p>
+                            </Link>
+                          </NavigationMenuLink>
+                        </li>
+                      ))}
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+
+                {/* Women Dropdown */}
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger className={cn(
+                    "text-[0.75rem] uppercase tracking-[0.15em] font-medium",
+                    "bg-transparent hover:bg-black/5 data-[state=open]:bg-black/5",
+                    "text-[#181818] h-auto px-3 py-2 rounded-none"
+                  )}>
+                    Women
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                      {womenCategories.map((category) => (
+                        <li key={category.title}>
+                          <NavigationMenuLink asChild>
+                            <Link
+                              to={category.href}
+                              className={cn(
+                                "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors",
+                                "hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                              )}
+                            >
+                              <div className="text-sm font-medium leading-none">{category.title}</div>
+                              <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                                {category.description}
+                              </p>
+                            </Link>
+                          </NavigationMenuLink>
+                        </li>
+                      ))}
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+
+                {/* Shop Link */}
+                <NavigationMenuItem>
+                  <Link to="/products" className={cn(
+                    navigationMenuTriggerStyle(),
+                    "text-[0.75rem] uppercase tracking-[0.15em] font-medium",
+                    "bg-transparent hover:bg-black/5",
+                    "text-[#181818] h-auto px-3 py-2 rounded-none"
+                  )}>
+                    Shop
+                  </Link>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
           </div>
 
           {/* ════════════════════════════════════════════════════════════
