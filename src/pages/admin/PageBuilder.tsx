@@ -425,356 +425,384 @@ export default function PageBuilder() {
                                             )}
 
                                             {selectedBlock.type === 'hero' && (
-                                                <div className="space-y-4">
-                                                    {/* Slide Management */}
-                                                    <div className="flex items-center justify-between">
-                                                        <label className="text-sm font-medium">Slides ({(selectedBlock.content.slides || [{ title: '', subtitle: '' }]).length}/5)</label>
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            disabled={(selectedBlock.content.slides || []).length >= 5}
-                                                            onClick={() => {
-                                                                const slides = selectedBlock.content.slides || [{ title: '', subtitle: '' }];
-                                                                if (slides.length < 5) {
-                                                                    updateContent('slides', [...slides, { title: '', subtitle: '' }]);
-                                                                }
-                                                            }}
-                                                        >
-                                                            + Add Slide
-                                                        </Button>
+                                                <div className="space-y-3">
+                                                    {/* ═══════════════════════════════════════════════════════════
+                                                        SECTION: CONTENT (Slides)
+                                                    ═══════════════════════════════════════════════════════════ */}
+                                                    <div className="border rounded-lg overflow-hidden">
+                                                        <div className="bg-muted/50 px-3 py-2 flex items-center justify-between">
+                                                            <span className="text-xs font-semibold uppercase tracking-wider">📝 Content</span>
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                className="h-6 text-xs"
+                                                                disabled={(selectedBlock.content.slides || []).length >= 5}
+                                                                onClick={() => {
+                                                                    const slides = selectedBlock.content.slides || [{ title: '', subtitle: '' }];
+                                                                    if (slides.length < 5) {
+                                                                        updateContent('slides', [...slides, { title: '', subtitle: '' }]);
+                                                                    }
+                                                                }}
+                                                            >
+                                                                + Slide
+                                                            </Button>
+                                                        </div>
+                                                        <div className="p-3 space-y-3">
+                                                            {/* Slide tabs */}
+                                                            <div className="flex gap-1 border-b">
+                                                                {(selectedBlock.content.slides || [{ title: 'Hero Title', subtitle: 'Subtitle' }]).map((_: any, idx: number) => (
+                                                                    <button
+                                                                        key={idx}
+                                                                        onClick={() => updateContent('activeSlideTab', idx)}
+                                                                        className={`px-3 py-1.5 text-xs font-medium border-b-2 transition-colors ${(selectedBlock.content.activeSlideTab ?? 0) === idx
+                                                                            ? 'border-primary text-primary'
+                                                                            : 'border-transparent text-muted-foreground hover:text-foreground'
+                                                                            }`}
+                                                                    >
+                                                                        {idx + 1}
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+
+                                                            {/* Active slide content */}
+                                                            {(() => {
+                                                                const activeIdx = selectedBlock.content.activeSlideTab ?? 0;
+                                                                const slides = selectedBlock.content.slides || [{ title: 'Hero Title', subtitle: 'Subtitle' }];
+                                                                const slide = slides[activeIdx] || slides[0];
+
+                                                                return (
+                                                                    <div className="space-y-2">
+                                                                        <div className="flex items-center justify-between">
+                                                                            <span className="text-xs text-muted-foreground">Slide {activeIdx + 1}</span>
+                                                                            {slides.length > 1 && (
+                                                                                <Button
+                                                                                    variant="ghost"
+                                                                                    size="icon"
+                                                                                    className="h-5 w-5 text-muted-foreground hover:text-destructive"
+                                                                                    onClick={() => {
+                                                                                        const newSlides = [...slides];
+                                                                                        newSlides.splice(activeIdx, 1);
+                                                                                        updateContent('slides', newSlides);
+                                                                                        if (activeIdx >= newSlides.length) {
+                                                                                            updateContent('activeSlideTab', Math.max(0, newSlides.length - 1));
+                                                                                        }
+                                                                                    }}
+                                                                                >
+                                                                                    <Trash2 className="h-3 w-3" />
+                                                                                </Button>
+                                                                            )}
+                                                                        </div>
+
+                                                                        {/* Image */}
+                                                                        <div className="space-y-1">
+                                                                            <label className="text-xs text-muted-foreground">Image</label>
+                                                                            <CompactImageUpload
+                                                                                value={slide.image || ''}
+                                                                                onChange={(url) => {
+                                                                                    const newSlides = [...slides];
+                                                                                    newSlides[activeIdx] = { ...slide, image: url };
+                                                                                    updateContent('slides', newSlides);
+                                                                                }}
+                                                                                maxWidth={1440}
+                                                                                maxHeight={800}
+                                                                                maxSizeMB={4}
+                                                                                aspectRatio="16/9"
+                                                                            />
+                                                                        </div>
+
+                                                                        {/* Video */}
+                                                                        <div className="space-y-1">
+                                                                            <label className="text-xs text-muted-foreground">Video URL</label>
+                                                                            <input
+                                                                                className="w-full p-1.5 border rounded text-xs"
+                                                                                value={slide.videoUrl || ''}
+                                                                                onChange={(e) => {
+                                                                                    const newSlides = [...slides];
+                                                                                    newSlides[activeIdx] = { ...slide, videoUrl: e.target.value };
+                                                                                    updateContent('slides', newSlides);
+                                                                                }}
+                                                                                placeholder="https://..."
+                                                                            />
+                                                                        </div>
+
+                                                                        {/* Title & Subtitle */}
+                                                                        <div className="grid grid-cols-2 gap-2">
+                                                                            <div className="space-y-1">
+                                                                                <label className="text-xs text-muted-foreground">Title</label>
+                                                                                <input
+                                                                                    className="w-full p-1.5 border rounded text-xs"
+                                                                                    value={slide.title || ''}
+                                                                                    onChange={(e) => {
+                                                                                        const newSlides = [...slides];
+                                                                                        newSlides[activeIdx] = { ...slide, title: e.target.value };
+                                                                                        updateContent('slides', newSlides);
+                                                                                    }}
+                                                                                    placeholder="Title"
+                                                                                />
+                                                                            </div>
+                                                                            <div className="space-y-1">
+                                                                                <label className="text-xs text-muted-foreground">Subtitle</label>
+                                                                                <input
+                                                                                    className="w-full p-1.5 border rounded text-xs"
+                                                                                    value={slide.subtitle || ''}
+                                                                                    onChange={(e) => {
+                                                                                        const newSlides = [...slides];
+                                                                                        newSlides[activeIdx] = { ...slide, subtitle: e.target.value };
+                                                                                        updateContent('slides', newSlides);
+                                                                                    }}
+                                                                                    placeholder="Subtitle"
+                                                                                />
+                                                                            </div>
+                                                                        </div>
+
+                                                                        {/* Buttons */}
+                                                                        <div className="grid grid-cols-2 gap-2">
+                                                                            <div className="space-y-1">
+                                                                                <label className="text-xs text-muted-foreground">Button 1</label>
+                                                                                <input className="w-full p-1.5 border rounded text-xs" value={slide.button1Text || ''} onChange={(e) => { const ns = [...slides]; ns[activeIdx] = { ...slide, button1Text: e.target.value }; updateContent('slides', ns); }} placeholder="Text" />
+                                                                                <input className="w-full p-1.5 border rounded text-xs" value={slide.button1Link || ''} onChange={(e) => { const ns = [...slides]; ns[activeIdx] = { ...slide, button1Link: e.target.value }; updateContent('slides', ns); }} placeholder="Link" />
+                                                                            </div>
+                                                                            <div className="space-y-1">
+                                                                                <label className="text-xs text-muted-foreground">Button 2</label>
+                                                                                <input className="w-full p-1.5 border rounded text-xs" value={slide.button2Text || ''} onChange={(e) => { const ns = [...slides]; ns[activeIdx] = { ...slide, button2Text: e.target.value }; updateContent('slides', ns); }} placeholder="Text" />
+                                                                                <input className="w-full p-1.5 border rounded text-xs" value={slide.button2Link || ''} onChange={(e) => { const ns = [...slides]; ns[activeIdx] = { ...slide, button2Link: e.target.value }; updateContent('slides', ns); }} placeholder="Link" />
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                );
+                                                            })()}
+                                                        </div>
                                                     </div>
 
-                                                    {/* Slides List */}
-                                                    <div className="space-y-4">
-                                                        {(selectedBlock.content.slides || [{ title: 'Hero Title', subtitle: 'Subtitle' }]).map((slide: any, index: number) => (
-                                                            <div key={index} className="p-3 border rounded bg-background relative">
-                                                                <div className="flex items-center justify-between mb-3">
-                                                                    <span className="text-xs font-semibold text-muted-foreground">Slide {index + 1}</span>
-                                                                    {(selectedBlock.content.slides || []).length > 1 && (
-                                                                        <Button
-                                                                            variant="ghost"
-                                                                            size="icon"
-                                                                            className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                                                                            onClick={() => {
-                                                                                const newSlides = [...(selectedBlock.content.slides || [])];
-                                                                                newSlides.splice(index, 1);
-                                                                                updateContent('slides', newSlides);
-                                                                            }}
-                                                                        >
-                                                                            <Trash2 className="h-3 w-3" />
-                                                                        </Button>
-                                                                    )}
+                                                    {/* ═══════════════════════════════════════════════════════════
+                                                        SECTION: LAYOUT
+                                                    ═══════════════════════════════════════════════════════════ */}
+                                                    <div className="border rounded-lg overflow-hidden">
+                                                        <div className="bg-muted/50 px-3 py-2">
+                                                            <span className="text-xs font-semibold uppercase tracking-wider">📐 Layout</span>
+                                                        </div>
+                                                        <div className="p-3 space-y-3">
+                                                            <div className="grid grid-cols-2 gap-2">
+                                                                <div className="space-y-1">
+                                                                    <label className="text-xs text-muted-foreground">Type</label>
+                                                                    <select className="w-full p-1.5 border rounded text-xs" value={selectedBlock.content.layout || 'default'} onChange={(e) => updateContent('layout', e.target.value)}>
+                                                                        <option value="default">Full Width</option>
+                                                                        <option value="split-left">Split Left</option>
+                                                                        <option value="split-right">Split Right</option>
+                                                                    </select>
                                                                 </div>
-
-                                                                <div className="space-y-3">
-                                                                    {/* Background Image */}
-                                                                    <div className="space-y-1">
-                                                                        <label className="text-xs text-muted-foreground">Background Image (1440×800px, max 4MB)</label>
-                                                                        <CompactImageUpload
-                                                                            value={slide.image || ''}
-                                                                            onChange={(url) => {
-                                                                                const newSlides = [...(selectedBlock.content.slides || [{ title: '', subtitle: '' }])];
-                                                                                newSlides[index] = { ...slide, image: url };
-                                                                                updateContent('slides', newSlides);
-                                                                            }}
-                                                                            maxWidth={1440}
-                                                                            maxHeight={800}
-                                                                            maxSizeMB={4}
-                                                                            aspectRatio="16/9"
-                                                                        />
-                                                                    </div>
-
-                                                                    {/* Title */}
-                                                                    <div className="space-y-1">
-                                                                        <label className="text-xs text-muted-foreground">Title</label>
-                                                                        <input
-                                                                            className="w-full p-1.5 border rounded text-xs font-medium"
-                                                                            value={slide.title || ''}
-                                                                            onChange={(e) => {
-                                                                                const newSlides = [...(selectedBlock.content.slides || [{ title: '', subtitle: '' }])];
-                                                                                newSlides[index] = { ...slide, title: e.target.value };
-                                                                                updateContent('slides', newSlides);
-                                                                            }}
-                                                                            placeholder="Hero Title"
-                                                                        />
-                                                                    </div>
-
-                                                                    {/* Subtitle */}
-                                                                    <div className="space-y-1">
-                                                                        <label className="text-xs text-muted-foreground">Subtitle</label>
-                                                                        <input
-                                                                            className="w-full p-1.5 border rounded text-xs"
-                                                                            value={slide.subtitle || ''}
-                                                                            onChange={(e) => {
-                                                                                const newSlides = [...(selectedBlock.content.slides || [{ title: '', subtitle: '' }])];
-                                                                                newSlides[index] = { ...slide, subtitle: e.target.value };
-                                                                                updateContent('slides', newSlides);
-                                                                            }}
-                                                                            placeholder="Subtitle text"
-                                                                        />
-                                                                    </div>
-
-                                                                    {/* Button 1 */}
-                                                                    <div className="grid grid-cols-2 gap-2">
-                                                                        <div className="space-y-1">
-                                                                            <label className="text-xs text-muted-foreground">Button 1 Text</label>
-                                                                            <input
-                                                                                className="w-full p-1.5 border rounded text-xs"
-                                                                                value={slide.button1Text || ''}
-                                                                                onChange={(e) => {
-                                                                                    const newSlides = [...(selectedBlock.content.slides || [{ title: '', subtitle: '' }])];
-                                                                                    newSlides[index] = { ...slide, button1Text: e.target.value };
-                                                                                    updateContent('slides', newSlides);
-                                                                                }}
-                                                                                placeholder="Shop Now"
-                                                                            />
-                                                                        </div>
-                                                                        <div className="space-y-1">
-                                                                            <label className="text-xs text-muted-foreground">Button 1 Link</label>
-                                                                            <input
-                                                                                className="w-full p-1.5 border rounded text-xs"
-                                                                                value={slide.button1Link || ''}
-                                                                                onChange={(e) => {
-                                                                                    const newSlides = [...(selectedBlock.content.slides || [{ title: '', subtitle: '' }])];
-                                                                                    newSlides[index] = { ...slide, button1Link: e.target.value };
-                                                                                    updateContent('slides', newSlides);
-                                                                                }}
-                                                                                placeholder="/products"
-                                                                            />
-                                                                        </div>
-                                                                    </div>
-
-                                                                    {/* Button 2 */}
-                                                                    <div className="grid grid-cols-2 gap-2">
-                                                                        <div className="space-y-1">
-                                                                            <label className="text-xs text-muted-foreground">Button 2 Text</label>
-                                                                            <input
-                                                                                className="w-full p-1.5 border rounded text-xs"
-                                                                                value={slide.button2Text || ''}
-                                                                                onChange={(e) => {
-                                                                                    const newSlides = [...(selectedBlock.content.slides || [{ title: '', subtitle: '' }])];
-                                                                                    newSlides[index] = { ...slide, button2Text: e.target.value };
-                                                                                    updateContent('slides', newSlides);
-                                                                                }}
-                                                                                placeholder="Learn More"
-                                                                            />
-                                                                        </div>
-                                                                        <div className="space-y-1">
-                                                                            <label className="text-xs text-muted-foreground">Button 2 Link</label>
-                                                                            <input
-                                                                                className="w-full p-1.5 border rounded text-xs"
-                                                                                value={slide.button2Link || ''}
-                                                                                onChange={(e) => {
-                                                                                    const newSlides = [...(selectedBlock.content.slides || [{ title: '', subtitle: '' }])];
-                                                                                    newSlides[index] = { ...slide, button2Link: e.target.value };
-                                                                                    updateContent('slides', newSlides);
-                                                                                }}
-                                                                                placeholder="/about"
-                                                                            />
-                                                                        </div>
-                                                                    </div>
+                                                                <div className="space-y-1">
+                                                                    <label className="text-xs text-muted-foreground">Height</label>
+                                                                    <select className="w-full p-1.5 border rounded text-xs" value={selectedBlock.content.height || 'large'} onChange={(e) => updateContent('height', e.target.value)}>
+                                                                        <option value="extra-small">XS</option>
+                                                                        <option value="small">Small</option>
+                                                                        <option value="medium">Medium</option>
+                                                                        <option value="large">Large</option>
+                                                                        <option value="fullscreen">Full</option>
+                                                                    </select>
                                                                 </div>
                                                             </div>
-                                                        ))}
-                                                    </div>
-
-                                                    {/* Slider Settings */}
-                                                    <div className="pt-4 border-t space-y-3">
-                                                        <p className="text-xs font-semibold text-muted-foreground">Slider Settings</p>
-
-                                                        <div className="flex items-center gap-2">
-                                                            <input
-                                                                type="checkbox"
-                                                                id="heroAutoPlay"
-                                                                checked={selectedBlock.content.autoPlay || false}
-                                                                onChange={(e) => updateContent('autoPlay', e.target.checked)}
-                                                            />
-                                                            <label htmlFor="heroAutoPlay" className="text-sm">Auto-play slides</label>
-                                                        </div>
-
-                                                        <div className="flex items-center gap-2">
-                                                            <input
-                                                                type="checkbox"
-                                                                id="heroShowDots"
-                                                                checked={selectedBlock.content.showDots !== false}
-                                                                onChange={(e) => updateContent('showDots', e.target.checked)}
-                                                            />
-                                                            <label htmlFor="heroShowDots" className="text-sm">Show dots navigation</label>
-                                                        </div>
-
-                                                        <div className="flex items-center gap-2">
-                                                            <input
-                                                                type="checkbox"
-                                                                id="heroShowArrows"
-                                                                checked={selectedBlock.content.showArrows !== false}
-                                                                onChange={(e) => updateContent('showArrows', e.target.checked)}
-                                                            />
-                                                            <label htmlFor="heroShowArrows" className="text-sm">Show arrow navigation</label>
-                                                        </div>
-
-                                                        <div className="space-y-1">
-                                                            <label className="text-xs text-muted-foreground">Overlay Opacity</label>
-                                                            <input
-                                                                type="range"
-                                                                min="0"
-                                                                max="100"
-                                                                value={(selectedBlock.content.overlayOpacity ?? 0.5) * 100}
-                                                                onChange={(e) => updateContent('overlayOpacity', parseInt(e.target.value) / 100)}
-                                                                className="w-full"
-                                                            />
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Layout & Style Settings */}
-                                                    <div className="pt-4 border-t space-y-3">
-                                                        <p className="text-xs font-semibold text-muted-foreground">Layout & Style</p>
-
-                                                        <div className="grid grid-cols-2 gap-3">
-                                                            <div className="space-y-1">
-                                                                <label className="text-xs text-muted-foreground">Height</label>
-                                                                <select
-                                                                    className="w-full p-2 border rounded text-sm"
-                                                                    value={selectedBlock.content.height || 'large'}
-                                                                    onChange={(e) => updateContent('height', e.target.value)}
-                                                                >
-                                                                    <option value="extra-small">Extra Small</option>
-                                                                    <option value="small">Small</option>
-                                                                    <option value="medium">Medium</option>
-                                                                    <option value="large">Large</option>
-                                                                    <option value="fullscreen">Full Screen</option>
-                                                                </select>
-                                                            </div>
-                                                            <div className="space-y-1">
-                                                                <label className="text-xs text-muted-foreground">Text Align</label>
-                                                                <select
-                                                                    className="w-full p-2 border rounded text-sm"
-                                                                    value={selectedBlock.content.textAlign || 'center'}
-                                                                    onChange={(e) => updateContent('textAlign', e.target.value)}
-                                                                >
-                                                                    <option value="left">Left</option>
-                                                                    <option value="center">Center</option>
-                                                                    <option value="right">Right</option>
-                                                                </select>
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="grid grid-cols-2 gap-3">
-                                                            <div className="space-y-1">
-                                                                <label className="text-xs text-muted-foreground">Content Position</label>
-                                                                <select
-                                                                    className="w-full p-2 border rounded text-sm"
-                                                                    value={selectedBlock.content.contentPosition || 'center'}
-                                                                    onChange={(e) => updateContent('contentPosition', e.target.value)}
-                                                                >
-                                                                    <option value="top">Top</option>
-                                                                    <option value="center">Center</option>
-                                                                    <option value="bottom">Bottom</option>
-                                                                </select>
+                                                            <div className="grid grid-cols-2 gap-2">
+                                                                <div className="space-y-1">
+                                                                    <label className="text-xs text-muted-foreground">Position</label>
+                                                                    <select className="w-full p-1.5 border rounded text-xs" value={selectedBlock.content.contentPosition || 'center'} onChange={(e) => updateContent('contentPosition', e.target.value)}>
+                                                                        <option value="top">Top</option>
+                                                                        <option value="center">Center</option>
+                                                                        <option value="bottom">Bottom</option>
+                                                                    </select>
+                                                                </div>
+                                                                <div className="space-y-1">
+                                                                    <label className="text-xs text-muted-foreground">Align</label>
+                                                                    <select className="w-full p-1.5 border rounded text-xs" value={selectedBlock.content.textAlign || 'center'} onChange={(e) => updateContent('textAlign', e.target.value)}>
+                                                                        <option value="left">Left</option>
+                                                                        <option value="center">Center</option>
+                                                                        <option value="right">Right</option>
+                                                                    </select>
+                                                                </div>
                                                             </div>
                                                             <div className="space-y-1">
                                                                 <label className="text-xs text-muted-foreground">Content Width</label>
-                                                                <select
-                                                                    className="w-full p-2 border rounded text-sm"
-                                                                    value={selectedBlock.content.contentWidth || 'medium'}
-                                                                    onChange={(e) => updateContent('contentWidth', e.target.value)}
-                                                                >
+                                                                <select className="w-full p-1.5 border rounded text-xs" value={selectedBlock.content.contentWidth || 'medium'} onChange={(e) => updateContent('contentWidth', e.target.value)}>
                                                                     <option value="narrow">Narrow</option>
                                                                     <option value="medium">Medium</option>
                                                                     <option value="wide">Wide</option>
-                                                                    <option value="full">Full Width</option>
+                                                                    <option value="full">Full</option>
                                                                 </select>
                                                             </div>
-                                                        </div>
-
-                                                        <div className="grid grid-cols-2 gap-3">
-                                                            <div className="space-y-1">
-                                                                <label className="text-xs text-muted-foreground">Overlay Type</label>
-                                                                <select
-                                                                    className="w-full p-2 border rounded text-sm"
-                                                                    value={selectedBlock.content.overlayType || 'solid'}
-                                                                    onChange={(e) => updateContent('overlayType', e.target.value)}
-                                                                >
-                                                                    <option value="solid">Solid</option>
-                                                                    <option value="gradient">Gradient (Bottom)</option>
-                                                                    <option value="gradient-radial">Radial Gradient</option>
-                                                                </select>
-                                                            </div>
-                                                            <div className="space-y-1">
-                                                                <label className="text-xs text-muted-foreground">Overlay Color</label>
-                                                                <input
-                                                                    type="color"
-                                                                    className="w-full h-9 p-1 border rounded"
-                                                                    value={selectedBlock.content.overlayColor || '#000000'}
-                                                                    onChange={(e) => updateContent('overlayColor', e.target.value)}
-                                                                />
+                                                            <div className="flex items-center gap-2">
+                                                                <input type="checkbox" id="heroFullWidth" checked={selectedBlock.content.fullWidth || false} onChange={(e) => updateContent('fullWidth', e.target.checked)} />
+                                                                <label htmlFor="heroFullWidth" className="text-xs">Full width (no rounded corners)</label>
                                                             </div>
                                                         </div>
+                                                    </div>
 
-                                                        <div className="grid grid-cols-2 gap-3">
+                                                    {/* ═══════════════════════════════════════════════════════════
+                                                        SECTION: APPEARANCE
+                                                    ═══════════════════════════════════════════════════════════ */}
+                                                    <div className="border rounded-lg overflow-hidden">
+                                                        <div className="bg-muted/50 px-3 py-2">
+                                                            <span className="text-xs font-semibold uppercase tracking-wider">🎨 Appearance</span>
+                                                        </div>
+                                                        <div className="p-3 space-y-3">
+                                                            <div className="grid grid-cols-2 gap-2">
+                                                                <div className="space-y-1">
+                                                                    <label className="text-xs text-muted-foreground">Overlay</label>
+                                                                    <select className="w-full p-1.5 border rounded text-xs" value={selectedBlock.content.overlayType || 'solid'} onChange={(e) => updateContent('overlayType', e.target.value)}>
+                                                                        <option value="solid">Solid</option>
+                                                                        <option value="gradient">Gradient</option>
+                                                                        <option value="gradient-radial">Radial</option>
+                                                                    </select>
+                                                                </div>
+                                                                <div className="space-y-1">
+                                                                    <label className="text-xs text-muted-foreground">Color</label>
+                                                                    <input type="color" className="w-full h-7 p-0.5 border rounded" value={selectedBlock.content.overlayColor || '#000000'} onChange={(e) => updateContent('overlayColor', e.target.value)} />
+                                                                </div>
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                <label className="text-xs text-muted-foreground">Overlay Opacity: {Math.round((selectedBlock.content.overlayOpacity ?? 0.5) * 100)}%</label>
+                                                                <input type="range" min="0" max="100" value={(selectedBlock.content.overlayOpacity ?? 0.5) * 100} onChange={(e) => updateContent('overlayOpacity', parseInt(e.target.value) / 100)} className="w-full h-2" />
+                                                            </div>
                                                             <div className="space-y-1">
                                                                 <label className="text-xs text-muted-foreground">Background Color</label>
-                                                                <input
-                                                                    type="color"
-                                                                    className="w-full h-9 p-1 border rounded"
-                                                                    value={selectedBlock.content.backgroundColor || '#18181b'}
-                                                                    onChange={(e) => updateContent('backgroundColor', e.target.value)}
-                                                                />
+                                                                <input type="color" className="w-full h-7 p-0.5 border rounded" value={selectedBlock.content.backgroundColor || '#18181b'} onChange={(e) => updateContent('backgroundColor', e.target.value)} />
                                                             </div>
                                                             <div className="space-y-1">
-                                                                <label className="text-xs text-muted-foreground">Overlay Opacity</label>
-                                                                <input
-                                                                    type="range"
-                                                                    min="0"
-                                                                    max="1"
-                                                                    step="0.1"
-                                                                    className="w-full h-9"
-                                                                    value={selectedBlock.content.overlayOpacity || 0.5}
-                                                                    onChange={(e) => updateContent('overlayOpacity', parseFloat(e.target.value))}
-                                                                />
+                                                                <label className="text-xs text-muted-foreground">Background Effect</label>
+                                                                <select className="w-full p-1.5 border rounded text-xs" value={selectedBlock.content.backgroundEffect || 'none'} onChange={(e) => updateContent('backgroundEffect', e.target.value)}>
+                                                                    <option value="none">None</option>
+                                                                    <option value="gradient-animated">Animated Gradient</option>
+                                                                    <option value="gradient-mesh">Gradient Mesh</option>
+                                                                    <option value="particles">Particles</option>
+                                                                </select>
                                                             </div>
+                                                            <div className="flex flex-col gap-2">
+                                                                <div className="flex items-center gap-2">
+                                                                    <input type="checkbox" id="heroParallax" checked={selectedBlock.content.parallax || false} onChange={(e) => updateContent('parallax', e.target.checked)} />
+                                                                    <label htmlFor="heroParallax" className="text-xs">Parallax effect</label>
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <input type="checkbox" id="heroShowBadge" checked={selectedBlock.content.showBadge || false} onChange={(e) => updateContent('showBadge', e.target.checked)} />
+                                                                    <label htmlFor="heroShowBadge" className="text-xs">Show badge</label>
+                                                                </div>
+                                                            </div>
+                                                            {selectedBlock.content.showBadge && (
+                                                                <div className="space-y-1">
+                                                                    <label className="text-xs text-muted-foreground">Badge Text</label>
+                                                                    <input className="w-full p-1.5 border rounded text-xs" value={selectedBlock.content.badgeText || 'New'} onChange={(e) => updateContent('badgeText', e.target.value)} placeholder="New Collection" />
+                                                                </div>
+                                                            )}
                                                         </div>
+                                                    </div>
 
-                                                        <div className="flex items-center gap-2">
-                                                            <input
-                                                                type="checkbox"
-                                                                id="heroParallax"
-                                                                checked={selectedBlock.content.parallax || false}
-                                                                onChange={(e) => updateContent('parallax', e.target.checked)}
-                                                            />
-                                                            <label htmlFor="heroParallax" className="text-sm">Enable parallax effect</label>
+                                                    {/* ═══════════════════════════════════════════════════════════
+                                                        SECTION: TEXT COLORS
+                                                    ═══════════════════════════════════════════════════════════ */}
+                                                    <div className="border rounded-lg overflow-hidden">
+                                                        <div className="bg-muted/50 px-3 py-2">
+                                                            <span className="text-xs font-semibold uppercase tracking-wider">🎨 Text Colors</span>
                                                         </div>
-
-                                                        <div className="flex items-center gap-2">
-                                                            <input
-                                                                type="checkbox"
-                                                                id="heroFullWidth"
-                                                                checked={selectedBlock.content.fullWidth || false}
-                                                                onChange={(e) => updateContent('fullWidth', e.target.checked)}
-                                                            />
-                                                            <label htmlFor="heroFullWidth" className="text-sm">Full width (no rounded corners)</label>
-                                                        </div>
-
-                                                        <div className="flex items-center gap-2">
-                                                            <input
-                                                                type="checkbox"
-                                                                id="heroShowBadge"
-                                                                checked={selectedBlock.content.showBadge || false}
-                                                                onChange={(e) => updateContent('showBadge', e.target.checked)}
-                                                            />
-                                                            <label htmlFor="heroShowBadge" className="text-sm">Show badge</label>
-                                                        </div>
-
-                                                        {selectedBlock.content.showBadge && (
+                                                        <div className="p-3 space-y-3">
+                                                            <div className="grid grid-cols-2 gap-2">
+                                                                <div className="space-y-1">
+                                                                    <label className="text-xs text-muted-foreground">Title</label>
+                                                                    <input type="color" className="w-full h-7 p-0.5 border rounded" value={selectedBlock.content.titleColor || '#ffffff'} onChange={(e) => updateContent('titleColor', e.target.value)} />
+                                                                </div>
+                                                                <div className="space-y-1">
+                                                                    <label className="text-xs text-muted-foreground">Subtitle</label>
+                                                                    <input type="color" className="w-full h-7 p-0.5 border rounded" value={selectedBlock.content.subtitleColor || '#b3b3b3'} onChange={(e) => updateContent('subtitleColor', e.target.value)} />
+                                                                </div>
+                                                            </div>
                                                             <div className="space-y-1">
-                                                                <label className="text-xs text-muted-foreground">Badge Text</label>
-                                                                <input
-                                                                    className="w-full p-2 border rounded text-sm"
-                                                                    value={selectedBlock.content.badgeText || 'New'}
-                                                                    onChange={(e) => updateContent('badgeText', e.target.value)}
-                                                                    placeholder="New Collection"
-                                                                />
+                                                                <label className="text-xs text-muted-foreground">Text Color Animation</label>
+                                                                <select className="w-full p-1.5 border rounded text-xs" value={selectedBlock.content.textColorAnimation || 'none'} onChange={(e) => updateContent('textColorAnimation', e.target.value)}>
+                                                                    <option value="none">None (Solid)</option>
+                                                                    <option value="gradient-animated">✨ Animated Gradient</option>
+                                                                    <option value="rainbow">🌈 Rainbow</option>
+                                                                    <option value="pulse-glow">💫 Pulse Glow</option>
+                                                                </select>
                                                             </div>
-                                                        )}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* ═══════════════════════════════════════════════════════════
+                                                        SECTION: ANIMATIONS
+                                                    ═══════════════════════════════════════════════════════════ */}
+                                                    <div className="border rounded-lg overflow-hidden">
+                                                        <div className="bg-muted/50 px-3 py-2">
+                                                            <span className="text-xs font-semibold uppercase tracking-wider">✨ Animations</span>
+                                                        </div>
+                                                        <div className="p-3 space-y-3">
+                                                            <div className="grid grid-cols-2 gap-2">
+                                                                <div className="space-y-1">
+                                                                    <label className="text-xs text-muted-foreground">Text</label>
+                                                                    <select className="w-full p-1.5 border rounded text-xs" value={selectedBlock.content.textAnimation || 'none'} onChange={(e) => updateContent('textAnimation', e.target.value)}>
+                                                                        <option value="none">None</option>
+                                                                        <option value="fade-in">Fade In</option>
+                                                                        <option value="slide-up">Slide Up</option>
+                                                                        <option value="fade-word">Word by Word</option>
+                                                                        <option value="typewriter">Typewriter</option>
+                                                                    </select>
+                                                                </div>
+                                                                <div className="space-y-1">
+                                                                    <label className="text-xs text-muted-foreground">Button Style</label>
+                                                                    <select className="w-full p-1.5 border rounded text-xs" value={selectedBlock.content.buttonStyle || 'default'} onChange={(e) => updateContent('buttonStyle', e.target.value)}>
+                                                                        <option value="default">Default</option>
+                                                                        <option value="gradient">Gradient</option>
+                                                                        <option value="pill">Pill</option>
+                                                                        <option value="outlined">Outlined</option>
+                                                                        <option value="glow">Glow</option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                <label className="text-xs text-muted-foreground">Button Animation</label>
+                                                                <select className="w-full p-1.5 border rounded text-xs" value={selectedBlock.content.buttonAnimation || 'none'} onChange={(e) => updateContent('buttonAnimation', e.target.value)}>
+                                                                    <option value="none">None</option>
+                                                                    <option value="pulse">Pulse</option>
+                                                                    <option value="shine">Shine</option>
+                                                                    <option value="bounce">Bounce</option>
+                                                                </select>
+                                                            </div>
+                                                            <div className="flex items-center gap-2">
+                                                                <input type="checkbox" id="heroScrollAnimation" checked={selectedBlock.content.scrollAnimation || false} onChange={(e) => updateContent('scrollAnimation', e.target.checked)} />
+                                                                <label htmlFor="heroScrollAnimation" className="text-xs">Scroll animation</label>
+                                                            </div>
+                                                            {selectedBlock.content.scrollAnimation && (
+                                                                <select className="w-full p-1.5 border rounded text-xs" value={selectedBlock.content.scrollAnimationType || 'fade-up'} onChange={(e) => updateContent('scrollAnimationType', e.target.value)}>
+                                                                    <option value="fade-up">Fade Up</option>
+                                                                    <option value="fade-in">Fade In</option>
+                                                                    <option value="zoom-in">Zoom In</option>
+                                                                    <option value="slide-left">Slide Left</option>
+                                                                </select>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* ═══════════════════════════════════════════════════════════
+                                                        SECTION: SLIDER
+                                                    ═══════════════════════════════════════════════════════════ */}
+                                                    <div className="border rounded-lg overflow-hidden">
+                                                        <div className="bg-muted/50 px-3 py-2">
+                                                            <span className="text-xs font-semibold uppercase tracking-wider">🎬 Slider</span>
+                                                        </div>
+                                                        <div className="p-3 space-y-2">
+                                                            <div className="flex items-center gap-2">
+                                                                <input type="checkbox" id="heroAutoPlay" checked={selectedBlock.content.autoPlay || false} onChange={(e) => updateContent('autoPlay', e.target.checked)} />
+                                                                <label htmlFor="heroAutoPlay" className="text-xs">Auto-play</label>
+                                                            </div>
+                                                            <div className="flex items-center gap-2">
+                                                                <input type="checkbox" id="heroShowDots" checked={selectedBlock.content.showDots !== false} onChange={(e) => updateContent('showDots', e.target.checked)} />
+                                                                <label htmlFor="heroShowDots" className="text-xs">Show dots</label>
+                                                            </div>
+                                                            <div className="flex items-center gap-2">
+                                                                <input type="checkbox" id="heroShowArrows" checked={selectedBlock.content.showArrows !== false} onChange={(e) => updateContent('showArrows', e.target.checked)} />
+                                                                <label htmlFor="heroShowArrows" className="text-xs">Show arrows</label>
+                                                            </div>
+                                                            <div className="flex items-center gap-2">
+                                                                <input type="checkbox" id="heroEnableSwipe" checked={selectedBlock.content.enableSwipe !== false} onChange={(e) => updateContent('enableSwipe', e.target.checked)} />
+                                                                <label htmlFor="heroEnableSwipe" className="text-xs">Mobile swipe</label>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             )}
@@ -2042,25 +2070,29 @@ export default function PageBuilder() {
                                 <p className="text-sm text-muted-foreground">Select a block to edit its properties.</p>
                             )}
                         </div>
-                    </div>
+                    </div >
 
                     {/* Drag Overlay */}
                     <DragOverlay>
-                        {activeSidebarItem ? (
-                            <div className="p-2 bg-white border rounded shadow opacity-80 w-[200px]">
-                                {/* Simplified overlay for sidebar item */}
-                                Dragging {activeSidebarItem}
-                            </div>
-                        ) : null}
-                        {activeId ? (
-                            <div className="p-4 bg-white border rounded shadow-lg opacity-80 w-[600px]">
-                                Dragging Block
-                            </div>
-                        ) : null}
-                    </DragOverlay>
+                        {
+                            activeSidebarItem ? (
+                                <div className="p-2 bg-white border rounded shadow opacity-80 w-[200px]">
+                                    {/* Simplified overlay for sidebar item */}
+                                    Dragging {activeSidebarItem}
+                                </div>
+                            ) : null
+                        }
+                        {
+                            activeId ? (
+                                <div className="p-4 bg-white border rounded shadow-lg opacity-80 w-[600px]">
+                                    Dragging Block
+                                </div>
+                            ) : null
+                        }
+                    </DragOverlay >
 
-                </DndContext>
-            </div>
-        </TooltipProvider>
+                </DndContext >
+            </div >
+        </TooltipProvider >
     );
 }

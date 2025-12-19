@@ -69,7 +69,7 @@ const ProductCard = ({
         <p className="text-[11px] tracking-[0.2em] uppercase text-muted-foreground">
           {category}
         </p>
-        <h3 className="font-serif text-lg tracking-tight group-hover:text-accent transition-colors duration-300 line-clamp-2">
+        <h3 className="font-serif text-lg tracking-tight transition-all duration-300 line-clamp-2 group-hover:opacity-80 group-hover:underline underline-offset-4 decoration-1">
           {name}
         </h3>
         <div className="flex items-center gap-2">
