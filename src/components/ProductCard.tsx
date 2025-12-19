@@ -1,5 +1,4 @@
 import { Link } from "@tanstack/react-router";
-import { ShoppingBag, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ProductCardProps {
@@ -25,62 +24,49 @@ const ProductCard = ({
 }: ProductCardProps) => {
   return (
     <Link to="/product/$id" params={{ id }} className="group block">
-      {/* Image Container */}
-      <div className="relative overflow-hidden bg-stone aspect-[3/4] mb-4 rounded-sm">
-        {/* Image with zoom effect */}
+      {/* Image Container - Clean, no rounded corners */}
+      <div className="relative overflow-hidden bg-neutral-100 aspect-[3/4]">
+        {/* Image with subtle scale on hover */}
         <img
           src={image}
           alt={name}
-          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+          className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
         />
 
-        {/* Overlay gradient on hover */}
-        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-        {/* Quick view overlay */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-          <div className="flex gap-3">
-            <div className="bg-cream/90 backdrop-blur-sm p-3 rounded-full transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 delay-75 hover:bg-cream hover:scale-110 cursor-pointer">
-              <Eye className="h-5 w-5 text-charcoal" />
-            </div>
-            <div className="bg-cream/90 backdrop-blur-sm p-3 rounded-full transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 delay-150 hover:bg-cream hover:scale-110 cursor-pointer">
-              <ShoppingBag className="h-5 w-5 text-charcoal" />
-            </div>
+        {/* Badges - Top left */}
+        {(isNew || onSale) && (
+          <div className="absolute top-2 left-2 flex flex-col gap-1">
+            {isNew && (
+              <span className="bg-[#181818] text-white text-[9px] tracking-[0.1em] uppercase px-2 py-1">
+                New
+              </span>
+            )}
+            {onSale && (
+              <span className="bg-[#181818] text-white text-[9px] tracking-[0.1em] uppercase px-2 py-1">
+                Sale
+              </span>
+            )}
           </div>
-        </div>
-
-        {/* Badges */}
-        <div className="absolute top-3 left-3 flex flex-col gap-2">
-          {isNew && (
-            <span className="bg-charcoal text-cream text-[10px] tracking-widest uppercase px-3 py-1.5 rounded-sm">
-              New
-            </span>
-          )}
-          {onSale && (
-            <span className="bg-accent text-accent-foreground text-[10px] tracking-widest uppercase px-3 py-1.5 rounded-sm">
-              Sale
-            </span>
-          )}
-        </div>
+        )}
       </div>
 
-      {/* Product Info */}
-      <div className="space-y-2">
-        <p className="text-[11px] tracking-[0.2em] uppercase text-muted-foreground">
-          {category}
-        </p>
-        <h3 className="font-serif text-lg tracking-tight transition-all duration-300 line-clamp-2 group-hover:opacity-80 group-hover:underline underline-offset-4 decoration-1">
+      {/* Product Info - Minimal typography */}
+      <div className="pt-3 pb-4 px-1">
+        {/* Product Name */}
+        <h3 className="text-[0.75rem] uppercase tracking-[0.05em] font-normal text-[#181818] leading-tight line-clamp-2 mb-1">
           {name}
         </h3>
+
+        {/* Price */}
         <div className="flex items-center gap-2">
           <p className={cn(
-            "text-sm",
-            onSale ? "text-accent font-medium" : "text-muted-foreground"
+            "text-[0.75rem] tracking-[0.05em]",
+            onSale ? "text-[#181818]" : "text-[#666666]"
           )}>
             ${price.toFixed(2)}
           </p>
           {onSale && originalPrice && (
-            <p className="text-sm text-muted-foreground line-through">
+            <p className="text-[0.75rem] tracking-[0.05em] text-[#999999] line-through">
               ${originalPrice.toFixed(2)}
             </p>
           )}
@@ -91,4 +77,3 @@ const ProductCard = ({
 };
 
 export default ProductCard;
-

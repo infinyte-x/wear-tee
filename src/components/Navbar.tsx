@@ -72,8 +72,8 @@ const Navbar = ({ cartCount = 0 }: NavbarProps) => {
 
   // Desktop nav links - fixed structure
   const desktopNavLinks = [
-    { to: "/collections/men", label: "Men" },
-    { to: "/collections/women", label: "Women" },
+    { to: "/products/men", label: "Men" },
+    { to: "/products/women", label: "Women" },
     { to: "/products", label: "Shop" },
   ];
 
@@ -85,8 +85,8 @@ const Navbar = ({ cartCount = 0 }: NavbarProps) => {
     }))
     : [
       { to: "/", label: "Home" },
-      { to: "/products/man", label: "Man" },
-      { to: "/products/woman", label: "Woman" },
+      { to: "/products/men", label: "Men" },
+      { to: "/products/women", label: "Women" },
       { to: "/products", label: "Shop All" },
     ];
 

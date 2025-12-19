@@ -148,7 +148,7 @@ const Products = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar cartCount={cartCount} />
 
-      <main className="flex-1 container mx-auto px-6 py-16 pt-24">
+      <main className="flex-1 w-full px-4 md:px-6 lg:px-8 py-16 pt-20">
         {/* Header */}
         <div className="mb-16 fade-in">
           <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-4">
@@ -188,7 +188,7 @@ const Products = () => {
 
         {/* Products Grid */}
         {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-0.5">
             {[...Array(8)].map((_, i) => (
               <div key={i} className="space-y-4">
                 <div className="shimmer aspect-[3/4] rounded-sm" />
@@ -209,7 +209,7 @@ const Products = () => {
             <p className="text-sm text-muted-foreground mb-6">
               {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''} found
             </p>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8 stagger-children">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-0.5 stagger-children">
               {filteredProducts.map((product) => (
                 <ProductCard
                   key={product.id}
