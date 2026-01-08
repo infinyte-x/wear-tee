@@ -1,0 +1,10 @@
+language: "en"
+reviews:
+  auto_review:
+    enabled: true
+  path_filters:
+    - "!**/node_modules/**"
+    - "!**/*.lock"
+  review_comment_lgtm: false
+chat:
+  auto_reply: true
